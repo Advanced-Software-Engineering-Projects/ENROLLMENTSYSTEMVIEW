@@ -1,0 +1,520 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Typography,
+  Alert,
+  Box,
+  Snackbar,
+  Button,
+  Paper,
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from '@mui/material';
+import Lottie from 'lottie-react';
+import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
+import LoadingAnimation from '../../assets/Animations/LoadingPage/LoadingAnimation.json';
+import TitleBar from '../../components/Titlebar/Titlebar';
+
+// Mock data for available courses
+const mockAvailableCourses = [
+  { courseCode: 'CS111', courseName: 'Introduction to Computing Science', credits: 3, year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'CS112', courseName: 'Data Structures & Algorithms', credits: 3, year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'CS140', courseName: 'Introduction to Software Engineering', credits: 3, year: 1, program: ['SE'] },
+  { courseCode: 'CS150', courseName: 'Introduction to Computer Networks & Security', credits: 3, year: 1, program: ['NS'] },
+  { courseCode: 'MA111', courseName: 'Mathematics', credits: 3, year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'MA161', courseName: 'Discrete Mathematics', credits: 3, year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'MG101', courseName: 'Introduction to Management', credits: 3, year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'ST131', courseName: 'Statistics', credits: 3, year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'UU100A', courseName: 'Information Literacy', credits: 3, year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'UU114', courseName: 'English for Academic Purposes', credits: 3, year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'CS211', courseName: 'Computer Organisation', credits: 3, year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS214', courseName: 'Design & Analysis of Algorithms', credits: 3, year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS215', courseName: 'Computer Communications & Management', credits: 3, year: 2, program: ['NS'] },
+  { courseCode: 'CS218', courseName: 'Mobile Computing', credits: 3, year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS219', courseName: 'Cloud Computing', credits: 3, year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS230', courseName: 'Requirements Engineering', credits: 3, year: 2, program: ['SE'] },
+  { courseCode: 'CS241', courseName: 'Software Design & Implementation', credits: 3, year: 2, program: ['SE'] },
+  { courseCode: 'IS221', courseName: 'Information Systems I', credits: 3, year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'IS222', courseName: 'Information Systems II', credits: 3, year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'UU200', courseName: 'Ethics & Governance', credits: 3, year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS001', courseName: 'Foundations of Professional Practice', credits: 3, year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS310', courseName: 'Computer Networks', credits: 3, year: 3, program: ['NS', 'SE'] },
+  { courseCode: 'CS311', courseName: 'Operating Systems', credits: 3, year: 3, program: ['NS', 'SE'] },
+  { courseCode: 'CS317', courseName: 'Computer & Network Security', credits: 3, year: 3, program: ['NS'] },
+  { courseCode: 'CS324', courseName: 'Distributed Computing', credits: 3, year: 3, program: ['NS', 'SE'] },
+  { courseCode: 'CS341', courseName: 'Software Quality Assurance & Testing', credits: 3, year: 3, program: ['SE'] },
+  { courseCode: 'CS350', courseName: 'Wireless Networks', credits: 3, year: 3, program: ['NS'] },
+  { courseCode: 'CS351', courseName: 'Network Design & Administration', credits: 3, year: 3, program: ['NS'] },
+  { courseCode: 'CS352', courseName: 'IT Infrastructure & Security', credits: 3, year: 3, program: ['NS', 'SE'] },
+  { courseCode: 'IS314', courseName: 'Business Process Analysis', credits: 3, year: 3, program: ['SE'] },
+  { courseCode: 'IS328', courseName: 'Software Project Management', credits: 3, year: 3, program: ['SE'] },
+  { courseCode: 'IS333', courseName: 'Project Management', credits: 3, year: 3, program: ['NS', 'SE'] },
+  { courseCode: 'CS400', courseName: 'Industry Experience Project (IEP)', credits: 4, year: 4, program: ['NS', 'SE'] },
+  { courseCode: 'CS403', courseName: 'Cybercrime & Digital Forensics', credits: 3, year: 4, program: ['NS', 'SE'] },
+  { courseCode: 'CS412', courseName: 'Advanced Networks', credits: 3, year: 4, program: ['NS', 'SE'] },
+  { courseCode: 'CS415', courseName: 'Software Engineering Project', credits: 4, year: 4, program: ['SE'] },
+  { courseCode: 'CS424', courseName: 'Network Security & Forensics', credits: 3, year: 4, program: ['NS', 'SE'] },
+];
+
+// Mock prerequisite graph
+const mockPrerequisiteGraph = {
+  CS111: [],
+  CS112: ['CS111'],
+  CS140: [],
+  CS150: [],
+  MA111: [],
+  MA161: [],
+  MG101: [],
+  ST131: [],
+  UU100A: [],
+  UU114: [],
+  CS211: ['CS111'],
+  CS214: ['CS112'],
+  CS215: ['CS111', 'CS150'],
+  CS218: ['CS112'],
+  CS219: ['CS112'],
+  CS230: ['CS111', 'CS140'],
+  CS241: ['CS112', 'CS230'],
+  IS221: [],
+  IS222: [],
+  UU200: [],
+  CS001: [],
+  CS310: ['CS211'],
+  CS311: ['CS211'],
+  CS317: ['CS215'],
+  CS324: ['CS218', 'CS219', 'CS214', 'CS215'],
+  CS341: ['CS241'],
+  CS350: ['CS215'],
+  CS351: ['CS215'],
+  CS352: ['CS215'],
+  IS314: [],
+  IS328: [],
+  IS333: ['CS211', 'CS214', 'CS215', 'CS218', 'CS219', 'CS230', 'CS241', 'IS221', 'IS222'],
+  CS400: [],
+  CS403: [],
+  CS412: [],
+  CS415: [],
+  CS424: [],
+};
+
+// Mock API functions
+const getAvailableCourses = async () =>
+  new Promise((resolve) => setTimeout(() => resolve(mockAvailableCourses), 500));
+
+const getPrerequisiteGraph = async (courseCode) =>
+  new Promise((resolve) => setTimeout(() => resolve(mockPrerequisiteGraph[courseCode] || []), 500));
+
+const mockRegisterCourse = async (courseCode) =>
+  new Promise((resolve) => setTimeout(() => resolve(`Registered ${courseCode}`), 500));
+
+// Enrollment Component
+const Enrollment = () => {
+  const navigate = useNavigate();
+  const [studentId] = useState('12345');
+  const [program] = useState('NS');
+  const [courses, setCourses] = useState([]);
+  const [lockedCourses, setLockedCourses] = useState(new Set());
+  const [enrolledCourses, setEnrolledCourses] = useState(() => {
+    const saved = localStorage.getItem('enrolledCourses');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [droppedCourses, setDroppedCourses] = useState(() => {
+    const saved = localStorage.getItem('droppedCourses');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [selectedEnrolledCourse, setSelectedEnrolledCourse] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [enrollLoading, setEnrollLoading] = useState(false);
+  const [dropLoading, setDropLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [enrollDialogOpen, setEnrollDialogOpen] = useState(false);
+  const [dropDialogOpen, setDropDialogOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedYear, setSelectedYear] = useState({ 1: '', 2: '', 3: '', 4: '' });
+
+  // Save enrolled and dropped courses to localStorage
+  useEffect(() => {
+    localStorage.setItem('enrolledCourses', JSON.stringify(enrolledCourses));
+    localStorage.setItem('droppedCourses', JSON.stringify(droppedCourses));
+  }, [enrolledCourses, droppedCourses]);
+
+  // Authentication Check
+  useEffect(() => {
+    const token = localStorage.getItem('token') || 'dummy-token';
+    if (!token) {
+      setError('Authentication failed. Please log in again.');
+      navigate('/login');
+    }
+  }, [navigate]);
+
+  // Fetch Courses and Prerequisites
+  useEffect(() => {
+    const fetchCoursesAndPrerequisites = async () => {
+      try {
+        const startTime = Date.now();
+        const coursesData = await getAvailableCourses();
+        if (!Array.isArray(coursesData)) throw new Error('Invalid course data received.');
+
+        // Filter by program and exclude enrolled courses
+        const availableCourses = coursesData.filter(
+          (course) =>
+            course.program.includes(program) &&
+            !enrolledCourses.some((ec) => ec.courseCode === course.courseCode)
+        );
+        setCourses(availableCourses);
+
+        // Check prerequisites
+        const lockedSet = new Set();
+        for (const course of coursesData) {
+          if (!course.program.includes(program)) continue;
+          const unmetPrereqs = await getPrerequisiteGraph(course.courseCode);
+          let hasUnmetPrereqs = false;
+          if (course.courseCode === 'CS324') {
+            hasUnmetPrereqs = !unmetPrereqs.some((prereq) =>
+              enrolledCourses.some((ec) => ec.courseCode === prereq)
+            );
+          } else if (course.courseCode === 'IS333') {
+            hasUnmetPrereqs = !unmetPrereqs.every((prereq) =>
+              enrolledCourses.some((ec) => ec.courseCode === prereq)
+            );
+          } else {
+            hasUnmetPrereqs = unmetPrereqs.some(
+              (prereq) => !enrolledCourses.some((ec) => ec.courseCode === prereq)
+            );
+          }
+          if (hasUnmetPrereqs) lockedSet.add(course.courseCode);
+        }
+        setLockedCourses(lockedSet);
+
+        // Ensure minimum 3-second delay
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = 3000 - elapsedTime;
+        if (remainingTime > 0) {
+          await new Promise((resolve) => setTimeout(resolve, remainingTime));
+        }
+      } catch (err) {
+        console.error('[DEBUG] Fetch Error:', err);
+        setError(err.message || 'Failed to load courses.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCoursesAndPrerequisites();
+  }, [enrolledCourses, program]);
+
+  // Handlers
+  const handleYearSelectChange = (year, courseCode) => {
+    setSelectedYear((prev) => ({ ...prev, [year]: courseCode }));
+    const course = courses.find((c) => c.courseCode === courseCode);
+    if (course && !lockedCourses.has(courseCode)) {
+      setSelectedCourse(course);
+      setEnrollDialogOpen(true);
+    }
+  };
+
+  const confirmEnroll = async () => {
+    if (!selectedCourse) return;
+    setEnrollLoading(true);
+    try {
+      await mockRegisterCourse(selectedCourse.courseCode);
+      setEnrolledCourses((prev) => [...prev, { ...selectedCourse, status: 'Waiting Approval' }]);
+      setCourses((prev) => prev.filter((c) => c.courseCode !== selectedCourse.courseCode));
+      setSnackbarMessage(`Successfully enrolled in ${selectedCourse.courseName}!`);
+      setSnackbarOpen(true);
+      setError('');
+      setSelectedYear((prev) => ({ ...prev, [selectedCourse.year]: '' }));
+      setSelectedEnrolledCourse('');
+    } catch (err) {
+      console.error('[Enrollment] Error enrolling course:', err);
+      setError(`Failed to enroll in ${selectedCourse.courseName}. Please try again.`);
+    } finally {
+      setEnrollLoading(false);
+      setEnrollDialogOpen(false);
+      setSelectedCourse(null);
+    }
+  };
+
+  const handleDrop = () => {
+    if (!selectedEnrolledCourse) {
+      setSnackbarMessage('Please select a course to drop.');
+      setSnackbarOpen(true);
+      return;
+    }
+    const course = enrolledCourses.find((c) => c.courseCode === selectedEnrolledCourse);
+    if (course) {
+      setSelectedCourse(course);
+      setDropDialogOpen(true);
+    }
+  };
+
+  const confirmDrop = async () => {
+    if (!selectedCourse) return;
+    setDropLoading(true);
+    try {
+      setEnrolledCourses((prev) => prev.filter((c) => c.courseCode !== selectedCourse.courseCode));
+      setCourses((prev) => [...prev, selectedCourse]);
+      setDroppedCourses((prev) => [...prev, selectedCourse]);
+      setSnackbarMessage(`Successfully dropped ${selectedCourse.courseName}!`);
+      setSnackbarOpen(true);
+      setSelectedEnrolledCourse('');
+    } finally {
+      setDropLoading(false);
+      setDropDialogOpen(false);
+      setSelectedCourse(null);
+    }
+  };
+
+  const handleSnackbarClose = () => setSnackbarOpen(false);
+
+  // Group courses by year
+  const coursesByYear = {
+    1: courses.filter((c) => c.year === 1),
+    2: courses.filter((c) => c.year === 2),
+    3: courses.filter((c) => c.year === 3),
+    4: courses.filter((c) => c.year === 4),
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <Box
+          sx={{
+            p: 3,
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Lottie
+            animationData={LoadingAnimation}
+            loop
+            style={{ width: 500, height: 300, marginBottom: 16 }}
+          />
+        </Box>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <TitleBar title="Enrollment" />
+        </Grid>
+
+        {error && (
+          <Grid item xs={12}>
+            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
+              {error}
+            </Alert>
+          </Grid>
+        )}
+
+        <Grid item xs={12}>
+          <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: '20px' }}>
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: 'bold', fontSize: '1.5rem', textAlign: 'center', color: '#000000' }}
+            >
+              Available Courses
+            </Typography>
+            {Object.keys(coursesByYear).map((year) => (
+              <Box key={year} sx={{ mb: 3 }}>
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                  <InputLabel>Year {year} Courses</InputLabel>
+                  <Select
+                    value={selectedYear[year] || ''}
+                    onChange={(e) => handleYearSelectChange(year, e.target.value)}
+                    label={`Year ${year} Courses`}
+                  >
+                    <MenuItem value="" disabled>
+                      Select a course
+                    </MenuItem>
+                    {coursesByYear[year].length > 0 ? (
+                      coursesByYear[year].map((course) => (
+                        <MenuItem
+                          key={course.courseCode}
+                          value={course.courseCode}
+                          disabled={lockedCourses.has(course.courseCode)}
+                        >
+                          {course.courseCode} - {course.courseName} ({course.credits} credits)
+                          {lockedCourses.has(course.courseCode) && ' (Prerequisites not met)'}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>No courses available</MenuItem>
+                    )}
+                  </Select>
+                </FormControl>
+              </Box>
+            ))}
+          </Paper>
+        </Grid>
+
+        <Grid container item xs={12} spacing={2}>
+          {/* Enrolled Courses Column */}
+          <Grid item xs={6}>
+            <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: '20px' }}>
+              <Typography variant="h6" gutterBottom sx={{ color: '#424242' }}>
+                Enrolled Courses
+              </Typography>
+              <FormControl fullWidth sx={{ mt: 2 }}>
+                <InputLabel>Enrolled Courses</InputLabel>
+                <Select
+                  value={selectedEnrolledCourse}
+                  onChange={(e) => setSelectedEnrolledCourse(e.target.value)}
+                  label="Enrolled Courses"
+                >
+                  <MenuItem value="" disabled>
+                    Select a course
+                  </MenuItem>
+                  {enrolledCourses.length > 0 ? (
+                    enrolledCourses.map((course) => (
+                      <MenuItem key={course.courseCode} value={course.courseCode}>
+                        {course.courseCode} - {course.courseName} ({course.credits} credits, Status: {course.status})
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>No enrolled courses</MenuItem>
+                  )}
+                </Select>
+              </FormControl>
+              {selectedEnrolledCourse && (
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleDrop}
+                  sx={{ mt: 2 }}
+                >
+                  Drop Course
+                </Button>
+              )}
+            </Paper>
+          </Grid>
+
+          {/* Dropped Courses Column */}
+          <Grid item xs={6}>
+            <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: '20px' }}>
+              <Typography variant="h6" gutterBottom sx={{ color: '#424242' }}>
+                Dropped Courses
+              </Typography>
+              <FormControl fullWidth sx={{ mt: 2 }}>
+                <InputLabel>Dropped Courses</InputLabel>
+                <Select
+                  value=""
+                  onChange={() => {}}
+                  label="Dropped Courses"
+                >
+                  <MenuItem value="" disabled>
+                    Dropped courses
+                  </MenuItem>
+                  {droppedCourses.length > 0 ? (
+                    droppedCourses.map((course) => (
+                      <MenuItem key={course.courseCode} value={course.courseCode} disabled>
+                        {course.courseCode} - {course.courseName} ({course.credits} credits)
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>No dropped courses</MenuItem>
+                  )}
+                </Select>
+              </FormControl>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Enroll Confirmation Dialog */}
+        <Dialog open={enrollDialogOpen} onClose={() => setEnrollDialogOpen(false)}>
+          <DialogTitle>Confirm Enrollment</DialogTitle>
+          <DialogContent sx={{ textAlign: 'center' }}>
+            {enrollLoading ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
+                <Lottie
+                  animationData={LoadingAnimation}
+                  loop
+                  style={{ width: 500, height: 300 }}
+                />
+                <Typography variant="body1">Enrolling in course...</Typography>
+              </Box>
+            ) : (
+              <Typography>
+                Are you sure you want to enroll in{' '}
+                {selectedCourse?.courseName} ({selectedCourse?.courseCode})?
+              </Typography>
+            )}
+          </DialogContent>
+          {!enrollLoading && (
+            <DialogActions>
+              <Button onClick={() => setEnrollDialogOpen(false)} color="primary">
+                No
+              </Button>
+              <Button onClick={confirmEnroll} color="primary" variant="contained">
+                Yes
+              </Button>
+            </DialogActions>
+          )}
+        </Dialog>
+
+        {/* Drop Confirmation Dialog */}
+        <Dialog open={dropDialogOpen} onClose={() => setDropDialogOpen(false)}>
+          <DialogTitle>Confirm Drop</DialogTitle>
+          <DialogContent sx={{ textAlign: 'center' }}>
+            {dropLoading ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
+                <Lottie
+                  animationData={LoadingAnimation}
+                  loop
+                  style={{ width: 500, height: 300 }}
+                />
+                <Typography variant="body1">Dropping course...</Typography>
+              </Box>
+            ) : (
+              <Typography>
+                Are you sure you want to drop{' '}
+                {selectedCourse?.courseName} ({selectedCourse?.courseCode})?
+              </Typography>
+            )}
+          </DialogContent>
+          {!dropLoading && (
+            <DialogActions>
+              <Button onClick={() => setDropDialogOpen(false)} color="primary">
+                No
+              </Button>
+              <Button onClick={confirmDrop} color="error" variant="contained">
+                Yes
+              </Button>
+            </DialogActions>
+          )}
+        </Dialog>
+
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={2000}
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          message={snackbarMessage}
+          action={
+            <Button color="inherit" onClick={handleSnackbarClose}>
+              Close
+            </Button>
+          }
+          sx={{ '& .MuiSnackbarContent-root': { backgroundColor: '#4caf50', color: '#fff' } }}
+        />
+      </Grid>
+    </DashboardLayout>
+  );
+};
+
+export default Enrollment;
