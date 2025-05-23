@@ -32,9 +32,9 @@ import {
   Filler,
   Title,
 } from 'chart.js';
-import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import FunctionsIcon from '@mui/icons-material/Functions';
+import PeopleIcon from '@mui/icons-material/People';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import Lottie from 'lottie-react';
 import LoadingAnimation from '../../assets/Animations/LoadingPage/LoadingAnimation.json'; // Adjust path as needed
 
@@ -72,20 +72,27 @@ const MetricCard = styled(Card)(({ theme }) => ({
 }));
 
 // Mock data
-const mockEnrolledCourses = [
-  { courseId: 1, courseCode: 'CS111', courseName: 'Introduction to Programming', dueDate: '2025-06-01' },
-  { courseId: 2, courseCode: 'MA111', courseName: 'Calculus I', dueDate: '2025-06-05' },
-  { courseId: 3, courseCode: 'ST131', courseName: 'Statistics I', dueDate: '2025-06-10' },
+const mockRegisteredStudents = { count: 1200 };
+const mockActiveCourses = { count: 45 };
+const mockPendingApprovals = { count: 15 };
+const mockPendingRequests = [
+  { id: 1, studentId: 'S123456', courseCode: 'CS111', requestType: 'Course Registration', date: '2025-05-20' },
+  { id: 2, studentId: 'S789012', courseCode: 'MA111', requestType: 'Enrollment', date: '2025-05-21' },
+  { id: 3, studentId: 'S345678', courseCode: 'ST131', requestType: 'Course Registration', date: '2025-05-22' },
 ];
-
-const mockCompletedCourses = { count: 4 };
-const mockTotalCompletedCourses = { count: 12 };
-const mockGpaData = [
-  { semester: 'Semester 1', gpa: 2.5 },
-  { semester: 'Semester 2', gpa: 3.0 },
-  { semester: 'Semester 3', gpa: 3.5 },
-  { semester: 'Semester 4', gpa: 4.0 },
-  { semester: 'Semester 5', gpa: 4.5 },
+const mockEnrollmentData = [
+  { semester: 'Semester 1', students: 1000 },
+  { semester: 'Semester 2', students: 1050 },
+  { semester: 'Semester 3', students: 1100 },
+  { semester: 'Semester 4', students: 1150 },
+  { semester: 'Semester 5', students: 1200 },
+];
+const mockCompletionRateData = [
+  { semester: 'Semester 1', rate: 85 },
+  { semester: 'Semester 2', rate: 88 },
+  { semester: 'Semester 3', rate: 90 },
+  { semester: 'Semester 4', rate: 92 },
+  { semester: 'Semester 5', rate: 95 },
 ];
 
 const localizer = momentLocalizer(moment);
@@ -148,27 +155,31 @@ const CustomToolbar = ({ label, onNavigate, onView }) => {
   );
 };
 
-const Dashboard = () => {
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
-  const [completedCourses, setCompletedCourses] = useState(0);
-  const [totalCompletedCourses, setTotalCompletedCourses] = useState(0);
-  const [gpaData, setGpaData] = useState([]);
-  const [loading, setLoading] = useState(true); // Initialize as true to show loading immediately
+const AdminDashboard = ({ toggleTheme, mode }) => {
+  const [registeredStudents, setRegisteredStudents] = useState(0);
+  const [activeCourses, setActiveCourses] = useState(0);
+  const [pendingApprovals, setPendingApprovals] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [enrollmentData, setEnrollmentData] = useState([]);
+  const [completionRateData, setCompletionRateData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   // Get the current year
-  const currentYear = new Date().getFullYear(); // This will return 2025
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    // Simulate fetching data with a minimum 2-second delay
+    // Simulate fetching data with a 3-second delay
     const timer = setTimeout(() => {
-      setEnrolledCourses(mockEnrolledCourses);
-      setCompletedCourses(mockCompletedCourses.count);
-      setTotalCompletedCourses(mockTotalCompletedCourses.count);
-      setGpaData(mockGpaData);
+      setRegisteredStudents(mockRegisteredStudents.count);
+      setActiveCourses(mockActiveCourses.count);
+      setPendingApprovals(mockPendingApprovals.count);
+      setPendingRequests(mockPendingRequests);
+      setEnrollmentData(mockEnrollmentData);
+      setCompletionRateData(mockCompletionRateData);
       setLoading(false);
-    }, 3000); // 3-second delay
-    return () => clearTimeout(timer); // Cleanup timeout on unmount
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   if (loading)
@@ -178,33 +189,33 @@ const Dashboard = () => {
       </Box>
     );
 
-  const courseCompletionData = {
-    labels: ['Completed', 'Remaining'],
+  const enrollmentChartData = {
+    labels: ['Registered', 'Unregistered'],
     datasets: [
       {
-        data: [totalCompletedCourses, 20 - totalCompletedCourses], // Assume 20 total courses for degree
+        data: [registeredStudents, 1500 - registeredStudents], // Assume 1500 total capacity
         backgroundColor: ['#094c50', '#FFFFFF'],
         borderWidth: 0,
       },
     ],
   };
 
-  const courseCompletionOptions = {
+  const enrollmentChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: { position: 'bottom', labels: { color: '#FFFFFF' } },
-      title: { display: true, text: 'Course Completion', color: '#FFFFFF' },
+      title: { display: true, text: 'Student Enrollment', color: '#FFFFFF' },
     },
     cutout: '70%',
   };
 
-  const gpaLineChartData = {
-    labels: mockGpaData.map((data) => data.semester),
+  const completionRateLineChartData = {
+    labels: completionRateData.map((data) => data.semester),
     datasets: [
       {
-        label: 'GPA',
-        data: mockGpaData.map((data) => data.gpa),
+        label: 'Completion Rate (%)',
+        data: completionRateData.map((data) => data.rate),
         fill: true,
         backgroundColor: 'rgba(9, 76, 80, 0.8)',
         borderColor: '#FFFFFF',
@@ -213,7 +224,7 @@ const Dashboard = () => {
     ],
   };
 
-  const gpaLineChartOptions = {
+  const completionRateLineChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     animation: {
@@ -222,13 +233,13 @@ const Dashboard = () => {
     },
     plugins: {
       legend: { position: 'top', labels: { color: '#FFFFFF' } },
-      title: { display: true, text: 'GPA by Semester (Line)', color: '#FFFFFF' },
+      title: { display: true, text: 'Course Completion Rate by Semester', color: '#FFFFFF' },
     },
     scales: {
       y: {
         beginAtZero: true,
-        max: 4.5,
-        title: { display: true, text: 'GPA', color: '#FFFFFF' },
+        max: 100,
+        title: { display: true, text: 'Completion Rate (%)', color: '#FFFFFF' },
         ticks: { color: '#B0BEC5' },
       },
       x: {
@@ -239,15 +250,15 @@ const Dashboard = () => {
     },
   };
 
-  const calendarEvents = enrolledCourses.map((course) => ({
-    title: `${course.courseCode} Due`,
-    start: new Date(course.dueDate),
-    end: new Date(course.dueDate),
+  const calendarEvents = pendingRequests.map((request) => ({
+    title: `${request.requestType} - ${request.studentId}`,
+    start: new Date(request.date),
+    end: new Date(request.date),
     allDay: true,
   }));
 
   return (
-    <DashboardLayout>
+    <DashboardLayout toggleTheme={toggleTheme} mode={mode}>
       <style>
         {`
           .rbc-calendar .rbc-month-view .rbc-day-bg {
@@ -280,10 +291,10 @@ const Dashboard = () => {
       <IndustrialPaper sx={{ p: 3, mb: 4, background: 'linear-gradient(180deg, #dedede 0%, #094c50 100%)' }}>
         <CardContent>
           <Typography variant="h5" gutterBottom sx={{ color: '#000', fontWeight: 'bold', fontSize: '2rem' }}>
-            Welcome back 👋
+            Admin Dashboard 👋
           </Typography>
           <Typography variant="body1" sx={{ color: '#000', mb: 2 }}>
-            We’re excited to have you on this journey of learning, growth, and transformation. 🌟
+            Manage student records, courses, and approvals efficiently. 🚀
           </Typography>
         </CardContent>
       </IndustrialPaper>
@@ -294,13 +305,13 @@ const Dashboard = () => {
           <MetricCard>
             <CardContent sx={{ textAlign: 'center' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                <LocalLibraryIcon sx={{ color: '#B0BEC5', mr: 1 }} />
+                <PeopleIcon sx={{ color: '#B0BEC5', mr: 1 }} />
                 <Typography variant="h6" sx={{ color: '#B0BEC5', fontSize: '1rem' }}>
-                  Enrolled Courses
+                  Registered Students
                 </Typography>
               </Box>
               <Typography variant="h4" sx={{ color: '#FFFFFF', fontSize: '2.5rem', fontWeight: 700 }}>
-                {enrolledCourses.length}
+                {registeredStudents}
               </Typography>
             </CardContent>
           </MetricCard>
@@ -309,13 +320,13 @@ const Dashboard = () => {
           <MetricCard>
             <CardContent sx={{ textAlign: 'center' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                <CalendarMonthIcon sx={{ color: '#B0BEC5', mr: 1 }} />
+                <LibraryBooksIcon sx={{ color: '#B0BEC5', mr: 1 }} />
                 <Typography variant="h6" sx={{ color: '#B0BEC5', fontSize: '1rem' }}>
-                  {currentYear} Course Completion
+                  Active Courses
                 </Typography>
               </Box>
               <Typography variant="h4" sx={{ color: '#FFFFFF', fontSize: '2.5rem', fontWeight: 700 }}>
-                {completedCourses}
+                {activeCourses}
               </Typography>
             </CardContent>
           </MetricCard>
@@ -324,13 +335,13 @@ const Dashboard = () => {
           <MetricCard>
             <CardContent sx={{ textAlign: 'center' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                <FunctionsIcon sx={{ color: '#B0BEC5' }} />
+                <AssignmentTurnedInIcon sx={{ color: '#B0BEC5', mr: 1 }} />
                 <Typography variant="h6" sx={{ color: '#B0BEC5', fontSize: '1rem' }}>
-                  Overall Course Completion
+                  Pending Approvals
                 </Typography>
               </Box>
               <Typography variant="h4" sx={{ color: '#FFFFFF', fontSize: '2.5rem', fontWeight: 700 }}>
-                {totalCompletedCourses}
+                {pendingApprovals}
               </Typography>
             </CardContent>
           </MetricCard>
@@ -343,10 +354,10 @@ const Dashboard = () => {
           <IndustrialPaper sx={{ height: '400px' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ color: '#FFFFFF' }}>
-                Course Completion
+                Student Enrollment
               </Typography>
               <Box sx={{ height: '300px' }}>
-                <Doughnut data={courseCompletionData} options={courseCompletionOptions} />
+                <Doughnut data={enrollmentChartData} options={enrollmentChartOptions} />
               </Box>
             </CardContent>
           </IndustrialPaper>
@@ -355,10 +366,10 @@ const Dashboard = () => {
           <IndustrialPaper sx={{ height: '400px' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ color: '#FFFFFF' }}>
-                GPA Per Semester
+                Course Completion Rate
               </Typography>
               <Box sx={{ height: '300px' }}>
-                <Line data={gpaLineChartData} options={gpaLineChartOptions} />
+                <Line data={completionRateLineChartData} options={completionRateLineChartOptions} />
               </Box>
             </CardContent>
           </IndustrialPaper>
@@ -367,23 +378,25 @@ const Dashboard = () => {
           <IndustrialPaper sx={{ height: '400px' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ color: '#FFFFFF' }}>
-                Course Dues
+                Pending Approval Requests
               </Typography>
               <TableContainer>
                 <Table sx={{ backgroundColor: 'transparent' }}>
                   <TableHead>
                     <TableRow>
+                      <TableCell sx={{ color: '#FFFFFF', minWidth: '90px' }}>Student ID</TableCell>
                       <TableCell sx={{ color: '#FFFFFF', minWidth: '90px' }}>Course Code</TableCell>
-                      <TableCell sx={{ color: '#FFFFFF', minWidth: '90px' }}>Timeline</TableCell>
-                      <TableCell sx={{ color: '#FFFFFF', minWidth: '90px' }}>Due Date</TableCell>
+                      <TableCell sx={{ color: '#FFFFFF', minWidth: '90px' }}>Request Type</TableCell>
+                      <TableCell sx={{ color: '#FFFFFF', minWidth: '90px' }}>Date</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {enrolledCourses.map((course) => (
-                      <TableRow key={course.courseId}>
-                        <TableCell sx={{ color: '#B0BEC5' }}>{course.courseCode}</TableCell>
-                        <TableCell sx={{ color: '#B0BEC5' }}>{course.courseName}</TableCell>
-                        <TableCell sx={{ color: '#B0BEC5' }}>{course.dueDate}</TableCell>
+                    {pendingRequests.map((request) => (
+                      <TableRow key={request.id}>
+                        <TableCell sx={{ color: '#B0BEC5' }}>{request.studentId}</TableCell>
+                        <TableCell sx={{ color: '#B0BEC5' }}>{request.courseCode}</TableCell>
+                        <TableCell sx={{ color: '#B0BEC5' }}>{request.requestType}</TableCell>
+                        <TableCell sx={{ color: '#B0BEC5' }}>{request.date}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -396,7 +409,7 @@ const Dashboard = () => {
           <IndustrialPaper sx={{ height: '400px' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ color: '#FFFFFF' }}>
-                Due Dates Calendar
+                Administrative Deadlines
               </Typography>
               <Box sx={{ height: '300px' }}>
                 <Calendar
@@ -429,7 +442,7 @@ const Dashboard = () => {
                 The University of the South Pacific
               </Typography>
               <Typography variant="body1" sx={{ color: '#B0BEC5', mb: 2, textAlign: 'center' }}>
-                We're excited to have you on this journey of learning, growth, and transformation. 🌟
+                Empowering student success through efficient administration. 🌟
               </Typography>
               <Typography variant="body1" sx={{ color: '#B0BEC5', mb: 2, textAlign: 'center' }}>
                 Serving the future of students since © 1968
@@ -442,4 +455,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default AdminDashboard;
