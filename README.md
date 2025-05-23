@@ -1,12 +1,21 @@
-# React + Vite
+🔧 Tech Stack React.js (Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Tailwind CSS
 
-Currently, two official plugins are available:
+Axios for API calls
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+React Router DOM for navigation
 
-## Expanding the ESLint configuration
+🎯 Features Student and Admin login Dashboard with personalized views Course enrollment based on program and prerequisites View academic programs and associated courses Responsive design for seamless user experience
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+📡 Backend Integration This frontend is designed to interact with a .NET Core Web API backend hosted separately. The backend handles authentication, course management, and data persistence using SQL Server.
+
+🚀 Getting Started Clone the repository
+
+git clone https://github.com/Advanced-Software-Engineering-Projects/ENROLLMENTSYSTEMVIEW.git Navigate to the project folder
+
+cd USPENROLLMENTSYSTEMFRONTEND Install dependencies
+
+npm install Start the development server
+
+npm run dev
