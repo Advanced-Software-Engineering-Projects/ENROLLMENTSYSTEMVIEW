@@ -18,49 +18,51 @@ import {
   InputLabel,
 } from '@mui/material';
 import Lottie from 'lottie-react';
+import ReactFlow, { Background, Controls } from 'reactflow';
+import 'reactflow/dist/style.css';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import LoadingAnimation from '../../assets/Animations/LoadingPage/LoadingAnimation.json';
 import TitleBar from '../../components/Titlebar/Titlebar';
 
 // Mock data for available courses
 const mockAvailableCourses = [
-  { courseCode: 'CS111', courseName: 'Introduction to Computing Science', credits: 3, year: 1, program: ['NS', 'SE'] },
-  { courseCode: 'CS112', courseName: 'Data Structures & Algorithms', credits: 3, year: 1, program: ['NS', 'SE'] },
-  { courseCode: 'CS140', courseName: 'Introduction to Software Engineering', credits: 3, year: 1, program: ['SE'] },
-  { courseCode: 'CS150', courseName: 'Introduction to Computer Networks & Security', credits: 3, year: 1, program: ['NS'] },
-  { courseCode: 'MA111', courseName: 'Mathematics', credits: 3, year: 1, program: ['NS', 'SE'] },
-  { courseCode: 'MA161', courseName: 'Discrete Mathematics', credits: 3, year: 1, program: ['NS', 'SE'] },
-  { courseCode: 'MG101', courseName: 'Introduction to Management', credits: 3, year: 1, program: ['NS', 'SE'] },
-  { courseCode: 'ST131', courseName: 'Statistics', credits: 3, year: 1, program: ['NS', 'SE'] },
-  { courseCode: 'UU100A', courseName: 'Information Literacy', credits: 3, year: 1, program: ['NS', 'SE'] },
-  { courseCode: 'UU114', courseName: 'English for Academic Purposes', credits: 3, year: 1, program: ['NS', 'SE'] },
-  { courseCode: 'CS211', courseName: 'Computer Organisation', credits: 3, year: 2, program: ['NS', 'SE'] },
-  { courseCode: 'CS214', courseName: 'Design & Analysis of Algorithms', credits: 3, year: 2, program: ['NS', 'SE'] },
-  { courseCode: 'CS215', courseName: 'Computer Communications & Management', credits: 3, year: 2, program: ['NS'] },
-  { courseCode: 'CS218', courseName: 'Mobile Computing', credits: 3, year: 2, program: ['NS', 'SE'] },
-  { courseCode: 'CS219', courseName: 'Cloud Computing', credits: 3, year: 2, program: ['NS', 'SE'] },
-  { courseCode: 'CS230', courseName: 'Requirements Engineering', credits: 3, year: 2, program: ['SE'] },
-  { courseCode: 'CS241', courseName: 'Software Design & Implementation', credits: 3, year: 2, program: ['SE'] },
-  { courseCode: 'IS221', courseName: 'Information Systems I', credits: 3, year: 2, program: ['NS', 'SE'] },
-  { courseCode: 'IS222', courseName: 'Information Systems II', credits: 3, year: 2, program: ['NS', 'SE'] },
-  { courseCode: 'UU200', courseName: 'Ethics & Governance', credits: 3, year: 2, program: ['NS', 'SE'] },
-  { courseCode: 'CS001', courseName: 'Foundations of Professional Practice', credits: 3, year: 2, program: ['NS', 'SE'] },
-  { courseCode: 'CS310', courseName: 'Computer Networks', credits: 3, year: 3, program: ['NS', 'SE'] },
-  { courseCode: 'CS311', courseName: 'Operating Systems', credits: 3, year: 3, program: ['NS', 'SE'] },
-  { courseCode: 'CS317', courseName: 'Computer & Network Security', credits: 3, year: 3, program: ['NS'] },
-  { courseCode: 'CS324', courseName: 'Distributed Computing', credits: 3, year: 3, program: ['NS', 'SE'] },
-  { courseCode: 'CS341', courseName: 'Software Quality Assurance & Testing', credits: 3, year: 3, program: ['SE'] },
-  { courseCode: 'CS350', courseName: 'Wireless Networks', credits: 3, year: 3, program: ['NS'] },
-  { courseCode: 'CS351', courseName: 'Network Design & Administration', credits: 3, year: 3, program: ['NS'] },
-  { courseCode: 'CS352', courseName: 'IT Infrastructure & Security', credits: 3, year: 3, program: ['NS', 'SE'] },
-  { courseCode: 'IS314', courseName: 'Business Process Analysis', credits: 3, year: 3, program: ['SE'] },
-  { courseCode: 'IS328', courseName: 'Software Project Management', credits: 3, year: 3, program: ['SE'] },
-  { courseCode: 'IS333', courseName: 'Project Management', credits: 3, year: 3, program: ['NS', 'SE'] },
-  { courseCode: 'CS400', courseName: 'Industry Experience Project (IEP)', credits: 4, year: 4, program: ['NS', 'SE'] },
-  { courseCode: 'CS403', courseName: 'Cybercrime & Digital Forensics', credits: 3, year: 4, program: ['NS', 'SE'] },
-  { courseCode: 'CS412', courseName: 'Advanced Networks', credits: 3, year: 4, program: ['NS', 'SE'] },
-  { courseCode: 'CS415', courseName: 'Software Engineering Project', credits: 4, year: 4, program: ['SE'] },
-  { courseCode: 'CS424', courseName: 'Network Security & Forensics', credits: 3, year: 4, program: ['NS', 'SE'] },
+  { courseCode: 'CS111', courseName: 'Introduction to Computing Science', year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'CS112', courseName: 'Data Structures & Algorithms', year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'CS140', courseName: 'Introduction to Software Engineering', year: 1, program: ['SE'] },
+  { courseCode: 'CS150', courseName: 'Introduction to Computer Networks & Security', year: 1, program: ['NS'] },
+  { courseCode: 'MA111', courseName: 'Mathematics', year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'MA161', courseName: 'Discrete Mathematics', year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'MG101', courseName: 'Introduction to Management', year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'ST131', courseName: 'Statistics', year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'UU100A', courseName: 'Information Literacy', year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'UU114', courseName: 'English for Academic Purposes', year: 1, program: ['NS', 'SE'] },
+  { courseCode: 'CS211', courseName: 'Computer Organisation', year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS214', courseName: 'Design & Analysis of Algorithms', year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS215', courseName: 'Computer Communications & Management', year: 2, program: ['NS'] },
+  { courseCode: 'CS218', courseName: 'Mobile Computing', year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS219', courseName: 'Cloud Computing', year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS230', courseName: 'Requirements Engineering', year: 2, program: ['SE'] },
+  { courseCode: 'CS241', courseName: 'Software Design & Implementation', year: 2, program: ['SE'] },
+  { courseCode: 'IS221', courseName: 'Information Systems I', year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'IS222', courseName: 'Information Systems II', year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'UU200', courseName: 'Ethics & Governance', year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS001', courseName: 'Foundations of Professional Practice', year: 2, program: ['NS', 'SE'] },
+  { courseCode: 'CS310', courseName: 'Computer Networks', year: 3, program: ['NS', 'SE'] },
+  { courseCode: 'CS311', courseName: 'Operating Systems', year: 3, program: ['NS', 'SE'] },
+  { courseCode: 'CS317', courseName: 'Computer & Network Security', year: 3, program: ['NS'] },
+  { courseCode: 'CS324', courseName: 'Distributed Computing', year: 3, program: ['NS', 'SE'] },
+  { courseCode: 'CS341', courseName: 'Software Quality Assurance & Testing', year: 3, program: ['SE'] },
+  { courseCode: 'CS350', courseName: 'Wireless Networks', year: 3, program: ['NS'] },
+  { courseCode: 'CS351', courseName: 'Network Design & Administration', year: 3, program: ['NS'] },
+  { courseCode: 'CS352', courseName: 'IT Infrastructure & Security', year: 3, program: ['NS', 'SE'] },
+  { courseCode: 'IS314', courseName: 'Business Process Analysis', year: 3, program: ['SE'] },
+  { courseCode: 'IS328', courseName: 'Software Project Management', year: 3, program: ['SE'] },
+  { courseCode: 'IS333', courseName: 'Project Management', year: 3, program: ['NS', 'SE'] },
+  { courseCode: 'CS400', courseName: 'Industry Experience Project (IEP)', year: 4, program: ['NS', 'SE'] },
+  { courseCode: 'CS403', courseName: 'Cybercrime & Digital Forensics', year: 4, program: ['NS', 'SE'] },
+  { courseCode: 'CS412', courseName: 'Advanced Networks', year: 4, program: ['NS', 'SE'] },
+  { courseCode: 'CS415', courseName: 'Software Engineering Project', year: 4, program: ['SE'] },
+  { courseCode: 'CS424', courseName: 'Network Security & Forensics', year: 4, program: ['NS', 'SE'] },
 ];
 
 // Mock prerequisite graph
@@ -104,6 +106,40 @@ const mockPrerequisiteGraph = {
   CS424: [],
 };
 
+// BNS Courses and Prerequisites
+const bnsCourses = [
+  { courseCode: 'CS111', courseName: 'Introduction to Computing Science', year: 1, prerequisites: ['50% in Year 13/Form 7 Mathematics'] },
+  { courseCode: 'CS112', courseName: 'Data Structures & Algorithms', year: 1, prerequisites: ['CS111'] },
+  { courseCode: 'CS150', courseName: 'Introduction to Computer Networks & Security', year: 1, prerequisites: [] },
+  { courseCode: 'MA111', courseName: 'Mathematics', year: 1, prerequisites: [] },
+  { courseCode: 'MA161', courseName: 'Discrete Mathematics', year: 1, prerequisites: [] },
+  { courseCode: 'MG101', courseName: 'Introduction to Management', year: 1, prerequisites: [] },
+  { courseCode: 'ST131', courseName: 'Statistics', year: 1, prerequisites: [] },
+  { courseCode: 'UU100A', courseName: 'Information Literacy', year: 1, prerequisites: [] },
+  { courseCode: 'UU114', courseName: 'English for Academic Purposes', year: 1, prerequisites: [] },
+  { courseCode: 'CS211', courseName: 'Computer Organisation', year: 2, prerequisites: ['CS111'] },
+  { courseCode: 'CS214', courseName: 'Design & Analysis of Algorithms', year: 2, prerequisites: ['CS112'] },
+  { courseCode: 'CS215', courseName: 'Computer Communications & Management', year: 2, prerequisites: ['CS111', 'CS150'] },
+  { courseCode: 'CS218', courseName: 'Mobile Computing', year: 2, prerequisites: ['CS112'] },
+  { courseCode: 'CS219', courseName: 'Cloud Computing', year: 2, prerequisites: ['CS112'] },
+  { courseCode: 'IS221', courseName: 'Information Systems I', year: 2, prerequisites: [] },
+  { courseCode: 'IS222', courseName: 'Information Systems II', year: 2, prerequisites: [] },
+  { courseCode: 'UU200', courseName: 'Ethics & Governance', year: 2, prerequisites: [] },
+  { courseCode: 'CS001', courseName: 'Foundations of Professional Practice', year: 2, prerequisites: [] },
+  { courseCode: 'CS310', courseName: 'Computer Networks', year: 3, prerequisites: ['CS211'] },
+  { courseCode: 'CS311', courseName: 'Operating Systems', year: 3, prerequisites: ['CS211'] },
+  { courseCode: 'CS317', courseName: 'Computer & Network Security', year: 3, prerequisites: ['CS215'] },
+  { courseCode: 'CS324', courseName: 'Distributed Computing', year: 3, prerequisites: ['CS218', 'CS219', 'CS214', 'CS215'], prerequisiteType: 'OR' },
+  { courseCode: 'CS350', courseName: 'Wireless Networks', year: 3, prerequisites: ['CS215'] },
+  { courseCode: 'CS351', courseName: 'Network Design & Administration', year: 3, prerequisites: ['CS215'] },
+  { courseCode: 'CS352', courseName: 'IT Infrastructure & Security', year: 3, prerequisites: ['CS215'] },
+  { courseCode: 'IS333', courseName: 'Project Management', year: 3, prerequisites: ['Completion of 200-level CS/IS courses'] },
+  { courseCode: 'CS400', courseName: 'Industry Experience Project (IEP)', year: 4, prerequisites: [] },
+  { courseCode: 'CS403', courseName: 'Cybercrime & Digital Forensics', year: 4, prerequisites: [] },
+  { courseCode: 'CS412', courseName: 'Advanced Networks', year: 4, prerequisites: [] },
+  { courseCode: 'CS424', courseName: 'Network Security & Forensics', year: 4, prerequisites: [] },
+];
+
 // Mock API functions
 const getAvailableCourses = async () =>
   new Promise((resolve) => setTimeout(() => resolve(mockAvailableCourses), 500));
@@ -113,6 +149,35 @@ const getPrerequisiteGraph = async (courseCode) =>
 
 const mockRegisterCourse = async (courseCode) =>
   new Promise((resolve) => setTimeout(() => resolve(`Registered ${courseCode}`), 500));
+
+// Custom Node for ReactFlow
+const CustomNode = ({ data }) => {
+  const { courseCode, year } = data;
+  const color = {
+    1: '#094c50',
+    2: '#2596be',
+    3: '#388e3c',
+    4: '#d32f2f',
+  }[year] || '#424242';
+
+  return (
+    <Box
+      sx={{
+        backgroundColor: color,
+        color: '#fff',
+        padding: '10px',
+        borderRadius: '8px',
+        textAlign: 'center',
+        width: '100px',
+        fontSize: '12px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+      }}
+    >
+      {courseCode}
+    </Box>
+  );
+};
 
 // Enrollment Component
 const Enrollment = () => {
@@ -140,6 +205,8 @@ const Enrollment = () => {
   const [dropDialogOpen, setDropDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedYear, setSelectedYear] = useState({ 1: '', 2: '', 3: '', 4: '' });
+  const [courseDialogOpen, setCourseDialogOpen] = useState(false);
+  const [selectedCourseDetails, setSelectedCourseDetails] = useState(null);
 
   // Save enrolled and dropped courses to localStorage
   useEffect(() => {
@@ -212,6 +279,30 @@ const Enrollment = () => {
     fetchCoursesAndPrerequisites();
   }, [enrolledCourses, program]);
 
+  // Define ReactFlow nodes and edges for BNS prerequisites
+  const nodes = bnsCourses.map((course, index) => ({
+    id: course.courseCode,
+    type: 'custom',
+    data: { courseCode: course.courseCode, year: course.year },
+    position: {
+      x: course.year * 250 - 200,
+      y: index % 9 * 100,
+    },
+  }));
+
+  const edges = bnsCourses.flatMap((course) =>
+    course.prerequisites
+      .filter((prereq) => prereq !== '50% in Year 13/Form 7 Mathematics' && prereq !== 'Completion of 200-level CS/IS courses')
+      .map((prereq) => ({
+        id: `${prereq}-${course.courseCode}`,
+        source: prereq,
+        target: course.courseCode,
+        type: 'smoothstep',
+        style: { stroke: '#2596be', strokeWidth: 2 },
+        animated: course.prerequisiteType === 'OR',
+      }))
+  );
+
   // Handlers
   const handleYearSelectChange = (year, courseCode) => {
     setSelectedYear((prev) => ({ ...prev, [year]: courseCode }));
@@ -272,6 +363,12 @@ const Enrollment = () => {
       setDropDialogOpen(false);
       setSelectedCourse(null);
     }
+  };
+
+  const handleNodeClick = (event, node) => {
+    const course = bnsCourses.find((c) => c.courseCode === node.id);
+    setSelectedCourseDetails(course);
+    setCourseDialogOpen(true);
   };
 
   const handleSnackbarClose = () => setSnackbarOpen(false);
@@ -349,7 +446,7 @@ const Enrollment = () => {
                           value={course.courseCode}
                           disabled={lockedCourses.has(course.courseCode)}
                         >
-                          {course.courseCode} - {course.courseName} ({course.credits} credits)
+                          {course.courseCode} - {course.courseName}
                           {lockedCourses.has(course.courseCode) && ' (Prerequisites not met)'}
                         </MenuItem>
                       ))
@@ -360,6 +457,30 @@ const Enrollment = () => {
                 </FormControl>
               </Box>
             ))}
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: '20px' }}>
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: 'bold', fontSize: '1.5rem', textAlign: 'center', color: '#000000', mb: 2 }}
+            >
+              BNS Prerequisite Graph
+            </Typography>
+            <Box sx={{ height: '600px', width: '100%' }}>
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                nodeTypes={{ custom: CustomNode }}
+                onNodeClick={handleNodeClick}
+                fitView
+                style={{ background: '#f5f5f5' }}
+              >
+                <Background />
+                <Controls />
+              </ReactFlow>
+            </Box>
           </Paper>
         </Grid>
 
@@ -383,7 +504,7 @@ const Enrollment = () => {
                   {enrolledCourses.length > 0 ? (
                     enrolledCourses.map((course) => (
                       <MenuItem key={course.courseCode} value={course.courseCode}>
-                        {course.courseCode} - {course.courseName} ({course.credits} credits, Status: {course.status})
+                        {course.courseCode} - {course.courseName} (Status: {course.status})
                       </MenuItem>
                     ))
                   ) : (
@@ -423,7 +544,7 @@ const Enrollment = () => {
                   {droppedCourses.length > 0 ? (
                     droppedCourses.map((course) => (
                       <MenuItem key={course.courseCode} value={course.courseCode} disabled>
-                        {course.courseCode} - {course.courseName} ({course.credits} credits)
+                        {course.courseCode} - {course.courseName}
                       </MenuItem>
                     ))
                   ) : (
@@ -497,6 +618,32 @@ const Enrollment = () => {
               </Button>
             </DialogActions>
           )}
+        </Dialog>
+
+        {/* Course Details Dialog */}
+        <Dialog open={courseDialogOpen} onClose={() => setCourseDialogOpen(false)}>
+          <DialogTitle>Course Details</DialogTitle>
+          <DialogContent>
+            {selectedCourseDetails && (
+              <Box>
+                <Typography variant="h6">{selectedCourseDetails.courseCode} - {selectedCourseDetails.courseName}</Typography>
+                <Typography variant="body1"><strong>Year:</strong> {selectedCourseDetails.year}</Typography>
+                <Typography variant="body1">
+                  <strong>Prerequisites:</strong>{' '}
+                  {selectedCourseDetails.prerequisites.length > 0
+                    ? selectedCourseDetails.prerequisites.join(
+                        selectedCourseDetails.prerequisiteType === 'OR' ? ' or ' : ', '
+                      )
+                    : 'None'}
+                </Typography>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setCourseDialogOpen(false)} color="primary">
+              Close
+            </Button>
+          </DialogActions>
         </Dialog>
 
         <Snackbar
