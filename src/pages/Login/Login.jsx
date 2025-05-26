@@ -55,41 +55,63 @@ const Login = ({ onLogin }) => {
 
   const handleLogin = (e) => {
     e.preventDefault();
+    console.log('[Login] handleLogin called with studentId:', studentId); // Debug log
     setLoading(true);
 
-    if (studentId && password) {
-      // Determine role based on email (frontend-only logic)
-      const role = studentId.toLowerCase().includes("admin") ? "admin" : "student";
+    try {
+      if (studentId && password) {
+        // Determine role based on email (frontend-only logic)
+        const role = studentId.toLowerCase().includes("admin") ? "admin" : "student";
 
-      // Simulate authentication (replace with actual API call later)
-      const token = "dummy-token-123";
-      const userData = {
-        id: studentId,
-        name: role === "admin" ? "Admin User" : "John Doe",
-        email: `${studentId}@example.com`,
-        role: role,
-        firstName: role === "admin" ? "Admin" : "John",
-        lastName: role === "admin" ? "User" : "Doe",
-      };
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userData));
-      onLogin(userData);
+        // Simulate authentication (replace with actual API call later)
+        const token = "dummy-token-123";
+        const userData = {
+          id: studentId,
+          name: role === "admin" ? "Admin User" : "John Doe",
+          email: `${studentId}@example.com`,
+          role: role,
+          firstName: role === "admin" ? "Admin" : "John",
+          lastName: role === "admin" ? "User" : "Doe",
+        };
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(userData));
+        onLogin(userData);
+        setSnackbar({
+          open: true,
+          message: "Login successful! Redirecting...",
+          severity: "success",
+        });
+        console.log('[Login] Navigating to:', role === "admin" ? "/admin-dashboard" : "/dashboard"); // Debug log
+        setTimeout(() => {
+          try {
+            navigate(role === "admin" ? "/admin-dashboard" : "/dashboard");
+          } catch (navError) {
+            console.error('[Login] Navigation error:', navError);
+            setSnackbar({
+              open: true,
+              message: "Navigation failed. Please try again.",
+              severity: "error",
+            });
+            setLoading(false);
+          }
+        }, 1000);
+      } else {
+        setSnackbar({
+          open: true,
+          message: "Please enter Student ID and password.",
+          severity: "error",
+        });
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('[Login] Error in handleLogin:', error);
       setSnackbar({
         open: true,
-        message: "Login successful! Redirecting...",
-        severity: "success",
-      });
-      setTimeout(() => {
-        navigate(role === "admin" ? "/admin-dashboard" : "/student-dashboard");
-      }, 1000);
-    } else {
-      setSnackbar({
-        open: true,
-        message: "Please enter Student ID and password.",
+        message: "An error occurred during login. Please try again.",
         severity: "error",
       });
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -325,6 +347,7 @@ const Login = ({ onLogin }) => {
                     variant="contained"
                     color="primary"
                     disabled={loading}
+                    onClick={handleLogin} // Added fallback
                     sx={{
                       width: "70%",
                       borderRadius: "25px",

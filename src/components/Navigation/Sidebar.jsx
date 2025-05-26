@@ -106,10 +106,24 @@ const Sidebar = ({ isSidebarCollapsed }) => {
     },
     {
       icon: AdminPanelSettingsIcon,
+      name: "Student Records",
+      onClick: () => navigate("/admin"),
+      isActive: currentPath.startsWith("/admin"),
+      allowedRoles: ["SAS_MANAGER"],
+    },
+    {
+      icon: AdminPanelSettingsIcon,
+      name: "Admin Holds",
+      onClick: () => navigate("/admin"),
+      isActive: currentPath.startsWith("/admin"),
+      allowedRoles: ["SAS_MANAGER"],
+    },
+    {
+      icon: AdminPanelSettingsIcon,
       name: "Admin Forms Services",
-      onClick: () => navigate("/student"),
-      isActive: currentPath.startsWith("/student"),
-      allowedRoles: ["student"],
+      onClick: () => navigate("/admin"),
+      isActive: currentPath.startsWith("/admin"),
+      allowedRoles: ["SAS_MANAGER"],
     },
   ];
  
