@@ -150,7 +150,7 @@ const Login = ({ onLogin }) => {
         <Paper
           elevation={6}
           sx={{
-            width: { xs: "90%", sm: "600px" },
+            //width: { xs: "90%", sm: "600px" },
             borderRadius: "30px",
             backgroundColor: "#FAF9F6",
             overflow: "hidden",
