@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Card,
@@ -11,7 +11,18 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Divider,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import PhoneInput from 'react-phone-number-input';
+import SignatureCanvas from 'react-signature-canvas';
+import 'react-phone-number-input/style.css';
+import dayjs from 'dayjs';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import TitleBar from '../../components/Titlebar/Titlebar';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -36,29 +47,45 @@ const FormsPage = () => {
   // State for selected form (null for card view, or form name)
   const [selectedForm, setSelectedForm] = useState(null);
 
+  // Signature canvas refs
+  const sigCanvasRef = useRef(null);
+
   // State for Reconsideration of Course Grade Form
   const [reconsideration, setReconsideration] = useState({
     studentId: '',
-    name: '',
-    address: '',
+    fullName: '',
+    postalAddress: '',
+    dateOfBirth: null,
+    telephone: '',
+    email: '',
+    sponsorship: 'Private',
     courseCode: '',
-    year: '',
-    semester: '',
-    reason: '',
-    paymentReceipt: null,
+    courseLecturer: '',
+    courseTitle: '',
+    receiptNo: '',
+    paymentConfirmation: null,
   });
 
   // State for Compassionate/Aegrotat Pass/Special Exam Form
   const [compassionateAegrotat, setCompassionateAegrotat] = useState({
     studentId: '',
-    name: '',
-    address: '',
-    courseCode: '',
-    year: '',
+    fullName: '',
+    email: '',
+    campus: '',
+    telephone: '',
+    postalAddress: '',
     semester: '',
-    applicationType: '',
+    year: null,
+    missedExams: [
+      { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+      { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+      { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+      { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+    ],
     reason: '',
     supportingDocuments: null,
+    applicantSignature: '',
+    date: null,
   });
 
   // State for form submission status
@@ -75,20 +102,44 @@ const FormsPage = () => {
 
   // Validate form data
   const validateForm = (formData, formName) => {
-    const textFields = formName === 'reconsideration'
-      ? ['studentId', 'name', 'address', 'courseCode', 'year', 'semester', 'reason']
-      : ['studentId', 'name', 'address', 'courseCode', 'year', 'semester', 'applicationType', 'reason'];
-    if (textFields.some((field) => !formData[field])) {
-      return `All text fields are required for ${formName} form.`;
-    }
-    if (!/^\d{4}$/.test(formData.year)) {
-      return 'Year must be a 4-digit number.';
-    }
-    if (formName === 'reconsideration' && !formData.paymentReceipt) {
-      return 'Payment receipt is required for Reconsideration of Course Grade.';
-    }
-    if (formName === 'compassionateAegrotat' && !formData.supportingDocuments) {
-      return 'Supporting documents are required for Compassionate/Aegrotat Pass/Special Exam.';
+    if (formName === 'reconsideration') {
+      const textFields = ['studentId', 'fullName', 'postalAddress', 'telephone', 'email', 'sponsorship', 'courseCode', 'courseLecturer', 'courseTitle', 'receiptNo'];
+      if (textFields.some((field) => !formData[field])) {
+        return `All required text fields are required for ${formName} form.`;
+      }
+      if (!formData.dateOfBirth) return 'Date of birth is required.';
+      if (!formData.paymentConfirmation) return 'Payment confirmation is required.';
+      if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) {
+        return 'Invalid email format.';
+      }
+      if (!/^\+\d{7,15}$/.test(formData.telephone)) {
+        return 'Telephone must include country code and 7-15 digits.';
+      }
+    } else {
+      const textFields = ['studentId', 'fullName', 'email', 'campus', 'telephone', 'postalAddress', 'semester', 'reason', 'applicantSignature'];
+      if (textFields.some((field) => !formData[field])) {
+        return `All required text fields are required for ${formName} form.`;
+      }
+      if (!formData.year) return 'Year is required.';
+      if (!formData.date) return 'Application date is required.';
+      if (!formData.supportingDocuments) return 'Supporting documents are required.';
+      if (!/^\d{4}$/.test(formData.year?.year() || '9999')) {
+        return 'Year must be a 4-digit number.';
+      }
+      if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) {
+        return 'Invalid email format.';
+      }
+      if (!/^\+\d{7,15}$/.test(formData.telephone)) {
+        return 'Telephone must include country code and 7-15 digits.';
+      }
+      // Validate missed exams: if any field is filled, all must be filled
+      for (let i = 0; i < formData.missedExams.length; i++) {
+        const exam = formData.missedExams[i];
+        const hasAnyField = exam.courseCode || exam.examDate || exam.examStartTime || exam.applyingFor;
+        if (hasAnyField && !(exam.courseCode && exam.examDate && exam.examStartTime && exam.applyingFor)) {
+          return `All fields for Missed Exam ${i + 1} must be filled if any are provided.`;
+        }
+      }
     }
     return '';
   };
@@ -96,14 +147,57 @@ const FormsPage = () => {
   // Handle input changes
   const handleInputChange = (setForm, field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     setFormErrors((prev) => ({ ...prev, reconsideration: '', compassionateAegrotat: '' }));
+  };
+
+  // Handle missed exam input changes
+  const handleMissedExamChange = (index, field, value) => {
+    setCompassionateAegrotat((prev) => ({
+      ...prev,
+      missedExams: prev.missedExams.map((exam, i) =>
+        i === index ? { ...exam, [field]: value } : exam
+      ),
+    }));
+    setFormErrors((prev) => ({ ...prev, compassionateAegrotat: '' }));
   };
 
   // Handle file input changes
   const handleFileChange = (setForm, field, file) => {
     setForm((prev) => ({ ...prev, [field]: file }));
     setFormErrors((prev) => ({ ...prev, reconsideration: '', compassionateAegrotat: '' }));
+  };
+
+  // Handle date changes
+  const handleDateChange = (setForm, field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setFormErrors((prev) => ({ ...prev, reconsideration: '', compassionateAegrotat: '' }));
+  };
+
+  // Handle missed exam date changes
+  const handleMissedExamDateChange = (index, value) => {
+    setCompassionateAegrotat((prev) => ({
+      ...prev,
+      missedExams: prev.missedExams.map((exam, i) =>
+        i === index ? { ...exam, examDate: value } : exam
+      ),
+    }));
+    setFormErrors((prev) => ({ ...prev, compassionateAegrotat: '' }));
+  };
+
+  // Handle signature save
+  const handleSignatureSave = () => {
+    if (sigCanvasRef.current && !sigCanvasRef.current.isEmpty()) {
+      const signatureData = sigCanvasRef.current.getTrimmedCanvas().toDataURL('image/png');
+      setCompassionateAegrotat((prev) => ({ ...prev, applicantSignature: signatureData }));
+    }
+  };
+
+  // Handle signature clear
+  const handleSignatureClear = () => {
+    if (sigCanvasRef.current) {
+      sigCanvasRef.current.clear();
+      setCompassionateAegrotat((prev) => ({ ...prev, applicantSignature: '' }));
+    }
   };
 
   // Handle form submissions
@@ -115,15 +209,30 @@ const FormsPage = () => {
     }
     setSubmissionStatus((prev) => ({ ...prev, [formName]: 'submitting' }));
     try {
-      // Simulate form data with file (in practice, you'd send this to a server)
-      const formDataToSubmit = { ...formData, [formName === 'reconsideration' ? 'paymentReceipt' : 'supportingDocuments']: formData[formName === 'reconsideration' ? 'paymentReceipt' : 'supportingDocuments']?.name };
+      const formDataToSubmit = {
+        ...formData,
+        dateOfBirth: formData.dateOfBirth ? formData.dateOfBirth.format('YYYY-MM-DD') : null,
+        year: formData.year ? formData.year.format('YYYY') : null,
+        date: formData.date ? formData.date.format('YYYY-MM-DD') : null,
+        paymentConfirmation: formData.paymentConfirmation?.name || null,
+        supportingDocuments: formData.supportingDocuments?.name || null,
+      };
+      if (formName === 'compassionateAegrotat') {
+        formDataToSubmit.missedExams = formData.missedExams.map((exam) => ({
+          ...exam,
+          examDate: exam.examDate ? exam.examDate.format('YYYY-MM-DD') : null,
+        }));
+      }
       await handleFormSubmit(formDataToSubmit, formName);
       setSubmissionStatus((prev) => ({ ...prev, [formName]: 'success' }));
-      setForm(resetData); // Reset form
+      setForm(resetData);
+      if (formName === 'compassionateAegrotat' && sigCanvasRef.current) {
+        sigCanvasRef.current.clear();
+      }
       setTimeout(() => {
         setSubmissionStatus((prev) => ({ ...prev, [formName]: null }));
-        setSelectedForm(null); // Return to card view after success
-      }, 3000); // Clear success message and return to cards after 3 seconds
+        setSelectedForm(null);
+      }, 3000);
     } catch (error) {
       setSubmissionStatus((prev) => ({ ...prev, [formName]: 'error' }));
       setFormErrors((prev) => ({ ...prev, [formName]: error.message }));
@@ -132,8 +241,40 @@ const FormsPage = () => {
 
   // Form reset data
   const resetData = {
-    reconsideration: { studentId: '', name: '', address: '', courseCode: '', year: '', semester: '', reason: '', paymentReceipt: null },
-    compassionateAegrotat: { studentId: '', name: '', address: '', courseCode: '', year: '', semester: '', applicationType: '', reason: '', supportingDocuments: null },
+    reconsideration: {
+      studentId: '',
+      fullName: '',
+      postalAddress: '',
+      dateOfBirth: null,
+      telephone: '',
+      email: '',
+      sponsorship: 'Private',
+      courseCode: '',
+      courseLecturer: '',
+      courseTitle: '',
+      receiptNo: '',
+      paymentConfirmation: null,
+    },
+    compassionateAegrotat: {
+      studentId: '',
+      fullName: '',
+      email: '',
+      campus: '',
+      telephone: '',
+      postalAddress: '',
+      semester: '',
+      year: null,
+      missedExams: [
+        { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+        { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+        { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+        { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+      ],
+      reason: '',
+      supportingDocuments: null,
+      applicantSignature: '',
+      date: null,
+    },
   };
 
   // Form configurations
@@ -143,59 +284,34 @@ const FormsPage = () => {
       title: 'Application for Reconsideration of Course Grade',
       state: reconsideration,
       setState: setReconsideration,
-      fields: [
+      sections: [
         {
-          label: 'Student ID',
-          name: 'studentId',
-          type: 'text',
-          grid: { xs: 12, sm: 6 },
+          title: 'Personal Details',
+          fields: [
+            { label: 'Student ID', name: 'studentId', type: 'text', grid: { xs: 12, sm: 6 } },
+            { label: 'Full Name', name: 'fullName', type: 'text', grid: { xs: 12, sm: 6 } },
+            { label: 'Postal Address', name: 'postalAddress', type: 'text', multiline: true, rows: 3, grid: { xs: 12 } },
+            { label: 'Date of Birth', name: 'dateOfBirth', type: 'date', grid: { xs: 12, sm: 6 } },
+            { label: 'Telephone', name: 'telephone', type: 'phone', grid: { xs: 12, sm: 6 } },
+            { label: 'Email', name: 'email', type: 'email', grid: { xs: 12 } },
+            {
+              label: 'Are you a sponsored or private student?',
+              name: 'sponsorship',
+              type: 'radio',
+              options: ['Private', 'Sponsored'],
+              grid: { xs: 12 },
+            },
+          ],
         },
         {
-          label: 'Name',
-          name: 'name',
-          type: 'text',
-          grid: { xs: 12, sm: 6 },
-        },
-        {
-          label: 'Address',
-          name: 'address',
-          type: 'text',
-          multiline: true,
-          rows: 3,
-          grid: { xs: 12 },
-        },
-        {
-          label: 'Course Code',
-          name: 'courseCode',
-          type: 'text',
-          grid: { xs: 12, sm: 6 },
-        },
-        {
-          label: 'Year',
-          name: 'year',
-          type: 'number',
-          grid: { xs: 12, sm: 3 },
-        },
-        {
-          label: 'Semester/Trimester',
-          name: 'semester',
-          type: 'select',
-          options: ['Semester 1', 'Semester 2', 'Trimester 1', 'Trimester 2', 'Trimester 3'],
-          grid: { xs: 12, sm: 3 },
-        },
-        {
-          label: 'Reason for Reconsideration',
-          name: 'reason',
-          type: 'text',
-          multiline: true,
-          rows: 4,
-          grid: { xs: 12 },
-        },
-        {
-          label: 'Payment Receipt (FJ$50)',
-          name: 'paymentReceipt',
-          type: 'file',
-          grid: { xs: 12 },
+          title: 'Request Details',
+          fields: [
+            { label: 'Course Code', name: 'courseCode', type: 'text', grid: { xs: 12, sm: 6 } },
+            { label: 'Course Lecturer', name: 'courseLecturer', type: 'text', grid: { xs: 12, sm: 6 } },
+            { label: 'Course Title', name: 'courseTitle', type: 'text', grid: { xs: 12 } },
+            { label: 'Receipt No.', name: 'receiptNo', type: 'text', grid: { xs: 12, sm: 6 } },
+            { label: 'Payment Confirmation Upload', name: 'paymentConfirmation', type: 'file', grid: { xs: 12 } },
+          ],
         },
       ],
     },
@@ -204,66 +320,63 @@ const FormsPage = () => {
       title: 'Application for Compassionate/Aegrotat Pass/Special Exam',
       state: compassionateAegrotat,
       setState: setCompassionateAegrotat,
-      fields: [
+      sections: [
         {
-          label: 'Student ID',
-          name: 'studentId',
-          type: 'text',
-          grid: { xs: 12, sm: 6 },
+          title: 'Personal Details',
+          fields: [
+            { label: 'Student ID', name: 'studentId', type: 'text', grid: { xs: 12, sm: 6 } },
+            { label: 'Full Name', name: 'fullName', type: 'text', grid: { xs: 12, sm: 6 } },
+            { label: 'Email', name: 'email', type: 'email', grid: { xs: 12, sm: 6 } },
+            { label: 'Campus', name: 'campus', type: 'text', grid: { xs: 12, sm: 6 } },
+            { label: 'Telephone', name: 'telephone', type: 'phone', grid: { xs: 12, sm: 6 } },
+            { label: 'Postal Address', name: 'postalAddress', type: 'text', multiline: true, rows: 3, grid: { xs: 12 } },
+            {
+              label: 'Semester/Trimester',
+              name: 'semester',
+              type: 'select',
+              options: ['Semester 1', 'Semester 2', 'Trimester 1', 'Trimester 2', 'Trimester 3'],
+              grid: { xs: 12, sm: 6 },
+            },
+            { label: 'Year', name: 'year', type: 'year', grid: { xs: 12, sm: 6 } },
+          ],
         },
         {
-          label: 'Name',
-          name: 'name',
-          type: 'text',
-          grid: { xs: 12, sm: 6 },
+          title: 'Missed Exam Details',
+          fields: [
+            {
+              type: 'missedExam',
+              sets: [
+                { number: 1, grid: { xs: 12 } },
+                { number: 2, grid: { xs: 12 } },
+                { number: 3, grid: { xs: 12 } },
+                { number: 4, grid: { xs: 12 } },
+              ],
+            },
+          ],
         },
         {
-          label: 'Address',
-          name: 'address',
-          type: 'text',
-          multiline: true,
-          rows: 3,
-          grid: { xs: 12 },
-        },
-        {
-          label: 'Course Code',
-          name: 'courseCode',
-          type: 'text',
-          grid: { xs: 12, sm: 6 },
-        },
-        {
-          label: 'Year',
-          name: 'year',
-          type: 'number',
-          grid: { xs: 12, sm: 3 },
-        },
-        {
-          label: 'Semester/Trimester',
-          name: 'semester',
-          type: 'select',
-          options: ['Semester 1', 'Semester 2', 'Trimester 1', 'Trimester 2', 'Trimester 3'],
-          grid: { xs: 12, sm: 3 },
-        },
-        {
-          label: 'Application Type',
-          name: 'applicationType',
-          type: 'select',
-          options: ['Aegrotat Pass', 'Compassionate Pass', 'Special Exam'],
-          grid: { xs: 12 },
-        },
-        {
-          label: 'Reason for Application',
-          name: 'reason',
-          type: 'text',
-          multiline: true,
-          rows: 4,
-          grid: { xs: 12 },
-        },
-        {
-          label: 'Supporting Documents (e.g., Medical Certificate)',
-          name: 'supportingDocuments',
-          type: 'file',
-          grid: { xs: 12 },
+          title: 'Application Details',
+          note: (
+            <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+              <strong>Supporting Certified Documents</strong><br />
+              Aegrotat Pass (attach a USP approved medical certificate)<br />
+              Compassionate Pass (attach a certified copy of the death certificate or letter from employer)<br />
+              Special Examination (attach relevant documentation)
+            </Typography>
+          ),
+          fields: [
+            {
+              label: 'Please state below your reasons for making this application and attach all necessary documents.',
+              name: 'reason',
+              type: 'text',
+              multiline: true,
+              rows: 4,
+              grid: { xs: 12 },
+            },
+            { label: 'Attach Supporting Documents', name: 'supportingDocuments', type: 'file', grid: { xs: 12 } },
+            { label: 'Applicant’s Signature', name: 'applicantSignature', type: 'signature', grid: { xs: 12 } },
+            { label: 'Date', name: 'date', type: 'date', grid: { xs: 12, sm: 6 } },
+          ],
         },
       ],
     },
@@ -287,54 +400,197 @@ const FormsPage = () => {
         </Box>
         <Box component="form" noValidate>
           <Grid container spacing={2}>
-            {form.fields.map((field) => (
-              <Grid item {...field.grid} key={field.name}>
-                {field.type === 'select' ? (
-                  <FormControl fullWidth error={!!formErrors[form.name]}>
-                    <InputLabel>{field.label}</InputLabel>
-                    <Select
-                      value={form.state[field.name]}
-                      onChange={(e) => handleInputChange(form.setState, field.name, e.target.value)}
-                      required
-                    >
-                      {field.options.map((option) => (
-                        <MenuItem key={option} value={option}>
-                          {option}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                ) : field.type === 'file' ? (
-                  <Box>
-                    <Typography variant="body2" sx={{ mb: 1, color: formErrors[form.name] ? 'error.main' : 'text.secondary' }}>
-                      {field.label}
-                    </Typography>
-                    <input
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) => handleFileChange(form.setState, field.name, e.target.files[0])}
-                      style={{ width: '100%' }}
-                    />
-                    {form.state[field.name] && (
-                      <Typography variant="caption" sx={{ mt: 1, color: 'text.secondary' }}>
-                        Selected: {form.state[field.name].name}
-                      </Typography>
+            {form.sections.map((section, index) => (
+              <Grid item xs={12} key={section.title}>
+                <Typography variant="h6" sx={{ mb: 2, color: '#094c50' }}>
+                  {section.title}
+                </Typography>
+                {section.note && section.note}
+                {section.fields.map((field, fieldIndex) => (
+                  <Grid item {...(field.grid || { xs: 12 })} key={field.name || `field-${fieldIndex}`} sx={{ mb: 2 }}>
+                    {field.type === 'select' ? (
+                      <FormControl fullWidth error={!!formErrors[form.name]}>
+                        <InputLabel>{field.label}</InputLabel>
+                        <Select
+                          value={form.state[field.name]}
+                          onChange={(e) => handleInputChange(form.setState, field.name, e.target.value)}
+                          required
+                        >
+                          {field.options.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    ) : field.type === 'file' ? (
+                      <Box>
+                        <Typography variant="body2" sx={{ mb: 1, color: formErrors[form.name] ? 'error.main' : 'text.secondary' }}>
+                          {field.label}
+                        </Typography>
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => handleFileChange(form.setState, field.name, e.target.files[0])}
+                          style={{ width: '100%' }}
+                        />
+                        {form.state[field.name] && (
+                          <Typography variant="caption" sx={{ mt: 1, color: 'text.secondary' }}>
+                            Selected: {form.state[field.name].name}
+                          </Typography>
+                        )}
+                      </Box>
+                    ) : field.type === 'date' || field.type === 'year' ? (
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          label={field.label}
+                          value={form.state[field.name]}
+                          onChange={(value) => handleDateChange(form.setState, field.name, value)}
+                          views={field.type === 'year' ? ['year'] : ['year', 'month', 'day']}
+                          renderInput={(params) => (
+                            <TextField {...params} fullWidth required error={!!formErrors[form.name]} />
+                          )}
+                        />
+                      </LocalizationProvider>
+                    ) : field.type === 'radio' ? (
+                      <FormControl component="fieldset" error={!!formErrors[form.name]}>
+                        <Typography variant="body1" sx={{ mb: 1 }}>
+                          {field.label}
+                        </Typography>
+                        <RadioGroup
+                          value={form.state[field.name]}
+                          onChange={(e) => handleInputChange(form.setState, field.name, e.target.value)}
+                        >
+                          {field.options.map((option) => (
+                            <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    ) : field.type === 'phone' ? (
+                      <PhoneInput
+                        international
+                        defaultCountry="FJ"
+                        value={form.state[field.name]}
+                        onChange={(value) => handleInputChange(form.setState, field.name, value || '')}
+                        placeholder={field.label}
+                        style={{
+                          border: formErrors[form.name] ? '1px solid #d32f2f' : '1px solid #c4c4c4',
+                          borderRadius: '4px',
+                          padding: '8px',
+                          width: '100%',
+                        }}
+                      />
+                    ) : field.type === 'signature' ? (
+                      <Box>
+                        <Typography variant="body2" sx={{ mb: 1, color: formErrors[form.name] ? 'error.main' : 'text.secondary' }}>
+                          {field.label}
+                        </Typography>
+                        <SignatureCanvas
+                          ref={sigCanvasRef}
+                          canvasProps={{
+                            style: { border: '1px solid #c4c4c4', width: '100%', height: '150px' },
+                          }}
+                        />
+                        <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+                          <Button
+                            variant="outlined"
+                            onClick={handleSignatureClear}
+                            sx={{ color: '#094c50', borderColor: '#094c50' }}
+                          >
+                            Clear
+                          </Button>
+                          <Button
+                            variant="contained"
+                            onClick={handleSignatureSave}
+                            sx={{ backgroundColor: '#094c50', '&:hover': { backgroundColor: '#073a3e' } }}
+                          >
+                            Save
+                          </Button>
+                        </Box>
+                        {form.state[field.name] && (
+                          <Typography variant="caption" sx={{ mt: 1, color: 'text.secondary' }}>
+                            Signature saved
+                          </Typography>
+                        )}
+                      </Box>
+                    ) : field.type === 'missedExam' ? (
+                      <Box>
+                        {field.sets.map((set) => (
+                          <Grid container spacing={1} key={`missed-exam-${set.number}`} sx={{ mb: 2 }}>
+                            <Grid item xs={12}>
+                              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                                Missed Exam {set.number}
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={3}>
+                              <TextField
+                                fullWidth
+                                label="Course Code"
+                                value={form.state.missedExams[set.number - 1].courseCode}
+                                onChange={(e) => handleMissedExamChange(set.number - 1, 'courseCode', e.target.value)}
+                                error={!!formErrors[form.name]}
+                                required
+                              />
+                            </Grid>
+                            <Grid item xs={3}>
+                              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                  label="Exam Date"
+                                  value={form.state.missedExams[set.number - 1].examDate}
+                                  onChange={(value) => handleMissedExamDateChange(set.number - 1, value)}
+                                  renderInput={(params) => (
+                                    <TextField {...params} fullWidth required error={!!formErrors[form.name]} />
+                                  )}
+                                />
+                              </LocalizationProvider>
+                            </Grid>
+                            <Grid item xs={3}>
+                              <TextField
+                                fullWidth
+                                label="Exam Start Time"
+                                type="time"
+                                value={form.state.missedExams[set.number - 1].examStartTime}
+                                onChange={(e) => handleMissedExamChange(set.number - 1, 'examStartTime', e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                                error={!!formErrors[form.name]}
+                                required
+                              />
+                            </Grid>
+                            <Grid item xs={3}>
+                              <FormControl fullWidth error={!!formErrors[form.name]}>
+                                <InputLabel>Applying For</InputLabel>
+                                <Select
+                                  value={form.state.missedExams[set.number - 1].applyingFor}
+                                  onChange={(e) => handleMissedExamChange(set.number - 1, 'applyingFor', e.target.value)}
+                                  required
+                                >
+                                  {['Aegrotat Pass', 'Compassionate Pass', 'Special Exam'].map((option) => (
+                                    <MenuItem key={option} value={option}>
+                                      {option}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                          </Grid>
+                        ))}
+                      </Box>
+                    ) : (
+                      <TextField
+                        fullWidth
+                        label={field.label}
+                        type={field.type}
+                        value={form.state[field.name]}
+                        onChange={(e) => handleInputChange(form.setState, field.name, e.target.value)}
+                        required
+                        error={!!formErrors[form.name]}
+                        multiline={field.multiline || false}
+                        rows={field.rows || 1}
+                      />
                     )}
-                  </Box>
-                ) : (
-                  <TextField
-                    fullWidth
-                    label={field.label}
-                    type={field.type}
-                    value={form.state[field.name]}
-                    onChange={(e) => handleInputChange(form.setState, field.name, e.target.value)}
-                    required
-                    error={!!formErrors[form.name]}
-                    multiline={field.multiline || false}
-                    rows={field.rows || 1}
-                    InputLabelProps={field.InputLabelProps || {}}
-                  />
-                )}
+                  </Grid>
+                ))}
+                {index < form.sections.length - 1 && <Grid item xs={12}><Divider sx={{ my: 2 }} /></Grid>}
               </Grid>
             ))}
             <Grid item xs={12}>
@@ -369,7 +625,6 @@ const FormsPage = () => {
         <Grid item xs={12}>
           {/* Header */}
           <TitleBar title="Student Forms" />
-
           {/* Card View or Selected Form */}
           {!selectedForm ? (
             <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -382,7 +637,7 @@ const FormsPage = () => {
                       background: 'linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%)',
                       cursor: 'pointer',
                       '&:hover': { background: 'linear-gradient(135deg, #f5f7fa 0%, #e0e4ea 100%)' },
-                      minHeight: '120px', // Fixed height for consistent tile size
+                      minHeight: '120px',
                     }}
                     onClick={() => setSelectedForm(form.name)}
                   >

@@ -28,26 +28,34 @@ const mockSubmissions = {
     {
       id: 1,
       studentId: 'S12345',
-      studentEmail: 'student1@example.com',
-      name: 'John Doe',
+      fullName: 'John Doe',
+      postalAddress: '123 Main St, Suva',
+      dateOfBirth: '2000-05-15',
+      telephone: '+6791234567',
+      email: 'john.doe@example.com',
+      sponsorship: 'Private',
       courseCode: 'CS111',
-      semester: 'Semester 1',
-      year: '2024',
-      reason: 'Discrepancy in final exam score',
-      paymentReceipt: 'receipt1.pdf',
+      courseLecturer: 'Dr. Smith',
+      courseTitle: 'Introduction to Programming',
+      receiptNo: 'REC123',
+      paymentConfirmation: 'receipt1.pdf',
       currentGrade: 'B',
       emailStatus: 'sent',
     },
     {
       id: 2,
       studentId: 'S67890',
-      studentEmail: 'student2@example.com',
-      name: 'Jane Smith',
+      fullName: 'Jane Smith',
+      postalAddress: '456 Oak Rd, Lautoka',
+      dateOfBirth: '1999-08-22',
+      telephone: '+6797654321',
+      email: 'jane.smith@example.com',
+      sponsorship: 'Sponsored',
       courseCode: 'CS215',
-      semester: 'Semester 2',
-      year: '2024',
-      reason: 'Believe marking error in assignment',
-      paymentReceipt: 'receipt2.pdf',
+      courseLecturer: 'Prof. Brown',
+      courseTitle: 'Data Structures',
+      receiptNo: 'REC456',
+      paymentConfirmation: 'receipt2.pdf',
       currentGrade: 'C',
       emailStatus: 'failed',
     },
@@ -56,28 +64,46 @@ const mockSubmissions = {
     {
       id: 1,
       studentId: 'S12345',
-      studentEmail: 'student1@example.com',
-      name: 'John Doe',
-      courseCode: 'CS111',
+      fullName: 'John Doe',
+      email: 'john.doe@example.com',
+      campus: 'Suva',
+      telephone: '+6791234567',
+      postalAddress: '123 Main St, Suva',
       semester: 'Semester 1',
       year: '2024',
-      applicationType: 'Aegrotat Pass',
+      missedExams: [
+        { courseCode: 'CS111', examDate: '2024-12-01', examStartTime: '09:00', applyingFor: 'Aegrotat Pass' },
+        { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+        { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+        { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+      ],
       reason: 'Medical condition during exam period',
       supportingDocuments: 'medical_certificate.pdf',
+      applicantSignature: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      date: '2024-11-01',
       status: 'pending',
       emailStatus: 'sent',
     },
     {
       id: 2,
       studentId: 'S67890',
-      studentEmail: 'student2@example.com',
-      name: 'Jane Smith',
-      courseCode: 'CS215',
+      fullName: 'Jane Smith',
+      email: 'jane.smith@example.com',
+      campus: 'Lautoka',
+      telephone: '+6797654321',
+      postalAddress: '456 Oak Rd, Lautoka',
       semester: 'Semester 2',
       year: '2024',
-      applicationType: 'Special Exam',
+      missedExams: [
+        { courseCode: 'CS215', examDate: '2024-12-15', examStartTime: '14:00', applyingFor: 'Special Exam' },
+        { courseCode: 'MA112', examDate: '2024-12-16', examStartTime: '10:00', applyingFor: 'Special Exam' },
+        { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+        { courseCode: '', examDate: null, examStartTime: '', applyingFor: '' },
+      ],
       reason: 'Family emergency',
       supportingDocuments: 'emergency_letter.pdf',
+      applicantSignature: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      date: '2024-11-10',
       status: 'pending',
       emailStatus: 'failed',
     },
@@ -157,7 +183,7 @@ const AdminFormsServices = () => {
         for (const submission of updatedSubmissions[formName]) {
           if (submission.emailStatus === 'pending') {
             try {
-              await sendEmail(submission.id, formName, submission.studentEmail);
+              await sendEmail(submission.id, formName, submission.email);
               submission.emailStatus = 'sent';
             } catch (error) {
               submission.emailStatus = 'failed';
@@ -274,11 +300,12 @@ const AdminFormsServices = () => {
       columns: [
         'Student ID',
         'Name',
+        'Email',
+        'Telephone',
         'Course Code',
-        'Semester',
-        'Year',
-        'Reason',
-        'Payment Receipt',
+        'Course Title',
+        'Course Lecturer',
+        'Receipt No.',
         'Current Grade',
         'Update Grade',
         'Email Status',
@@ -291,18 +318,31 @@ const AdminFormsServices = () => {
       columns: [
         'Student ID',
         'Name',
-        'Course Code',
-        'Semester',
-        'Year',
+        'Email',
+        'Telephone',
+        'Missed Exams',
         'Application Type',
         'Reason',
         'Supporting Documents',
+        'Signature',
         'Status',
         'Email Status',
         'Action',
       ],
     },
   ];
+
+  // Format missed exams for display
+  const formatMissedExams = (missedExams) => {
+    return missedExams
+      .map((exam, index) =>
+        exam.courseCode
+          ? `${index + 1}. ${exam.courseCode} (${exam.examDate}, ${exam.examStartTime}, ${exam.applyingFor})`
+          : null
+      )
+      .filter(Boolean)
+      .join('; ');
+  };
 
   // Render submission table
   const renderTable = (form) => (
@@ -339,14 +379,15 @@ const AdminFormsServices = () => {
               {submissions[form.name].map((submission) => (
                 <TableRow key={submission.id}>
                   <TableCell>{submission.studentId}</TableCell>
-                  <TableCell>{submission.name}</TableCell>
-                  <TableCell>{submission.courseCode}</TableCell>
-                  <TableCell>{submission.semester}</TableCell>
-                  <TableCell>{submission.year}</TableCell>
+                  <TableCell>{submission.fullName}</TableCell>
+                  <TableCell>{submission.email}</TableCell>
+                  <TableCell>{submission.telephone}</TableCell>
                   {form.name === 'reconsideration' ? (
                     <>
-                      <TableCell>{submission.reason}</TableCell>
-                      <TableCell>{submission.paymentReceipt}</TableCell>
+                      <TableCell>{submission.courseCode}</TableCell>
+                      <TableCell>{submission.courseTitle}</TableCell>
+                      <TableCell>{submission.courseLecturer}</TableCell>
+                      <TableCell>{submission.receiptNo}</TableCell>
                       <TableCell>{submission.currentGrade}</TableCell>
                       <TableCell>
                         {gradeUpdate.submissionId === submission.id ? (
@@ -399,9 +440,21 @@ const AdminFormsServices = () => {
                     </>
                   ) : (
                     <>
-                      <TableCell>{submission.applicationType}</TableCell>
+                      <TableCell>{formatMissedExams(submission.missedExams) || 'None'}</TableCell>
+                      <TableCell>{submission.missedExams.find((exam) => exam.applyingFor)?.applyingFor || 'N/A'}</TableCell>
                       <TableCell>{submission.reason}</TableCell>
                       <TableCell>{submission.supportingDocuments}</TableCell>
+                      <TableCell>
+                        {submission.applicantSignature ? (
+                          <img
+                            src={submission.applicantSignature}
+                            alt="Signature"
+                            style={{ height: '50px', border: '1px solid #c4c4c4' }}
+                          />
+                        ) : (
+                          'No Signature'
+                        )}
+                      </TableCell>
                       <TableCell>{submission.status}</TableCell>
                       <TableCell>
                         {applicationStatusUpdate.submissionId === submission.id ? (
@@ -467,7 +520,7 @@ const AdminFormsServices = () => {
                       <Button
                         variant="contained"
                         sx={{ backgroundColor: '#094c50', '&:hover': { backgroundColor: '#073a3e' } }}
-                        onClick={() => handleEmailResend(submission.id, form.name, submission.studentEmail)}
+                        onClick={() => handleEmailResend(submission.id, form.name, submission.email)}
                         disabled={submissionStatus.email[submission.id] === 'sending'}
                       >
                         {submissionStatus.email[submission.id] === 'sending' ? 'Sending...' : 'Send Again'}
@@ -499,7 +552,6 @@ const AdminFormsServices = () => {
         <Grid item xs={12}>
           {/* Header */}
           <TitleBar title="Admin Forms Services" />
-
           {/* Card View or Selected Form */}
           {!selectedForm ? (
             <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -512,7 +564,7 @@ const AdminFormsServices = () => {
                       background: 'linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%)',
                       cursor: 'pointer',
                       '&:hover': { background: 'linear-gradient(135deg, #f5f7fa 0%, #e0e4ea 100%)' },
-                      minHeight: '120px', // Fixed height for consistent tile size
+                      minHeight: '120px',
                     }}
                     onClick={() => setSelectedForm(form.name)}
                   >
