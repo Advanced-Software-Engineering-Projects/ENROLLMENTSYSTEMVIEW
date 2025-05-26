@@ -76,23 +76,23 @@ const generateInvoicePDF = (fee) => {
   try {
     // Add logo
     console.log('[Fees] Adding logo to PDF');
-    doc.addImage(Logo, 'PNG', 20, 10, 50, 20);
+    doc.addImage(Logo, 'PNG', 15, 10, 40, 40);
   } catch (err) {
     console.warn('[Fees] Failed to add logo to PDF:', err.message);
   }
 
   // Core content
   doc.setFontSize(12);
-  doc.text('Invoice', 150, 20);
-  doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 40);
-  doc.text(`Time: ${new Date().toLocaleTimeString()}`, 20, 50);
-  doc.text('Student Name: John Doe', 20, 60);
-  doc.text('Student ID: S123456', 20, 70);
-  doc.text('Payment Method: M-Paisa', 20, 80);
+  doc.text('Invoice', 150, 40);
+  doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 100);
+  doc.text(`Time: ${new Date().toLocaleTimeString()}`, 20, 60);
+  doc.text('Student Name: John Doe', 20, 70);
+  doc.text('Student ID: S123456', 20, 80);
+  doc.text('Payment Method: M-Paisa', 20, 90);
 
   // Fee Table
   autoTable(doc, {
-    startY: 90,
+    startY: 110,
     head: [['Fee ID', 'Fee Type', 'Amount', 'Due Date', 'Status']],
     body: [[
       fee.feeId,
