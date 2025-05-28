@@ -16,22 +16,21 @@ import {
   ListItemText,
   Button,
 } from "@mui/material";
- 
+
 // Icons Imports
 import NightsStayTwoToneIcon from "@mui/icons-material/NightsStayTwoTone";
 import Brightness5TwoToneIcon from "@mui/icons-material/Brightness5TwoTone";
 import NotificationsIcon from "@mui/icons-material/Notifications";
- 
- 
+
 // Import auth hook
 import { useAuth } from "../../hooks/useAuth";
 import ProfileDrawer from "../Extras/ProfileDrawer";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
- 
+
 // Import Images
 import DummyUser from "../../assets/Images/DummyUser/SDIPAdminUserPic.png";
- 
+
 // Keyframe Animations
 const rotate = keyframes`
   0% {
@@ -41,53 +40,56 @@ const rotate = keyframes`
     transform: rotate(360deg);
   }
 `;
- 
+
 const Header = ({ isSidebarCollapsed, toggleTheme, mode }) => {
   const theme = useTheme();
   const { user } = useAuth();
   const navigate = useNavigate();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
- 
+
   // Construct the profile pic URL
   const baseUrl = import.meta.env.VITE_API_URL;
   const profilePicUrl =
     user && user.profilePicPath
       ? `${baseUrl}${user.profilePicPath}`
       : DummyUser;
- 
+
   // State for controlling the profile drawer
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const toggleDrawer = (open) => {
     setDrawerOpen(open);
   };
- 
+
   // State for notifications and chats
   const [notifications, setNotifications] = useState([
     "Fees Payment Notice: USP Finance",
     "Fee Payment Reminder for Semester 1",
- 
     "Upcoming Event: USP Open Day",
     "Semester 1 Exam Timetable to be released soon",
- 
-   
   ]);
- 
+
   const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
   const [chatAnchorEl, setChatAnchorEl] = useState(null);
- 
+
   const handleNotificationClick = (event) => {
     setNotificationAnchorEl(event.currentTarget);
   };
- 
+
   const handleChatClick = (event) => {
     setChatAnchorEl(event.currentTarget);
   };
- 
+
   const handleClose = () => {
     setNotificationAnchorEl(null);
     setChatAnchorEl(null);
   };
- 
+
+  // Handle individual notification click
+  const handleNotificationSelect = (notification) => {
+    navigate(`/notifications/${encodeURIComponent(notification)}`);
+    handleClose();
+  };
+
   return (
     <>
       <Paper
@@ -155,7 +157,7 @@ const Header = ({ isSidebarCollapsed, toggleTheme, mode }) => {
                 justifyContent: "center",
               }}
             ></Box>
- 
+
             <Box
               sx={{
                 display: "flex",
@@ -171,7 +173,7 @@ const Header = ({ isSidebarCollapsed, toggleTheme, mode }) => {
                   </Badge>
                 </IconButton>
               </Tooltip>
- 
+
               {/* Notification Popover */}
               <Popover
                 open={Boolean(notificationAnchorEl)}
@@ -188,7 +190,11 @@ const Header = ({ isSidebarCollapsed, toggleTheme, mode }) => {
               >
                 <List>
                   {notifications.map((note, index) => (
-                    <ListItem key={index}>
+                    <ListItem
+                      key={index}
+                      button
+                      onClick={() => handleNotificationSelect(note)}
+                    >
                       <ListItemText primary={note} />
                     </ListItem>
                   ))}
@@ -199,7 +205,7 @@ const Header = ({ isSidebarCollapsed, toggleTheme, mode }) => {
                   </ListItem>
                 </List>
               </Popover>
- 
+
               {/* Dark and Light Mode Toggle Button */}
               <Tooltip
                 title={
@@ -235,7 +241,7 @@ const Header = ({ isSidebarCollapsed, toggleTheme, mode }) => {
                   )}
                 </IconButton>
               </Tooltip>
- 
+
               {/* User Profile Toggle Button */}
               <Tooltip title="View Profile" arrow>
                 <IconButton onClick={() => toggleDrawer(true)}>
@@ -288,5 +294,5 @@ const Header = ({ isSidebarCollapsed, toggleTheme, mode }) => {
     </>
   );
 };
- 
+
 export default Header;
