@@ -18,7 +18,6 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PTEI from "../../assets/Images/Logo/Logo.png";
-import LoginBorder from "../../assets/Images/LoginPage/LoginBorder.png";
 import Lottie from "lottie-react";
 import LoginPageAnimation from "../../assets/Animations/LoginPage/PTEILogin.json";
 import LoginUniversity from "../../assets/Animations/LoginPage/PTEILoginUniversity.json";
@@ -54,65 +53,86 @@ const Login = ({ onLogin }) => {
   };
 
   const handleLogin = (e) => {
-    e.preventDefault();
-    console.log('[Login] handleLogin called with studentId:', studentId); // Debug log
-    setLoading(true);
+  e.preventDefault();
+  console.log('[Login] handleLogin called with studentId:', studentId);
+  setLoading(true);
 
-    try {
-      if (studentId && password) {
-        // Determine role based on email (frontend-only logic)
-        const role = studentId.toLowerCase().includes("admin") ? "admin" : "student";
+  try {
+    if (!studentId || !password) {
+      setSnackbar({
+        open: true,
+        message: "Please enter Student ID/Email and password.",
+        severity: "error",
+      });
+      setLoading(false);
+      return;
+    }
 
-        // Simulate authentication (replace with actual API call later)
-        const token = "dummy-token-123";
-        const userData = {
-          id: studentId,
-          name: role === "admin" ? "Admin User" : "John Doe",
-          email: `${studentId}@example.com`,
-          role: role,
-          firstName: role === "admin" ? "Admin" : "John",
-          lastName: role === "admin" ? "User" : "Doe",
-        };
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(userData));
-        onLogin(userData);
+    // Validate Student ID format: S + 8 digits + @student.usp.ac.fj
+    const studentIdRegex = /^S\d{8}@student\.usp\.ac\.fj$/;
+    const isStudent = studentIdRegex.test(studentId);
+    const isAdmin = studentId === "Admin@usp.ac.fj";
+
+    if (!isStudent && !isAdmin) {
+      setSnackbar({
+        open: true,
+        message: "Invalid Student ID or Admin ID format.",
+        severity: "error",
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Simulate authentication (replace with actual API call later)
+    const role = isAdmin ? "admin" : "student";
+    const token = "dummy-token-123";
+    const userData = {
+      id: studentId,
+      name: isAdmin ? "Admin User" : `Student ${studentId.split('@')[0]}`,
+      email: studentId,
+      role: role,
+      firstName: isAdmin ? "Admin" : "Student",
+      lastName: isAdmin ? "User" : studentId.split('@')[0],
+    };
+
+    // Store token and user data in localStorage
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    // Call onLogin prop with user data
+    onLogin(userData);
+
+    setSnackbar({
+      open: true,
+      message: "Login successful! Redirecting...",
+      severity: "success",
+    });
+
+    console.log('[Login] Navigating to:', role === "admin" ? "/admin-dashboard" : "/dashboard");
+
+    setTimeout(() => {
+      try {
+        navigate(role === "admin" ? "/admin-dashboard" : "/dashboard");
+      } catch (navError) {
+        console.error('[Login] Navigation error:', navError);
         setSnackbar({
           open: true,
-          message: "Login successful! Redirecting...",
-          severity: "success",
-        });
-        console.log('[Login] Navigating to:', role === "admin" ? "/admin-dashboard" : "/dashboard"); // Debug log
-        setTimeout(() => {
-          try {
-            navigate(role === "admin" ? "/admin-dashboard" : "/dashboard");
-          } catch (navError) {
-            console.error('[Login] Navigation error:', navError);
-            setSnackbar({
-              open: true,
-              message: "Navigation failed. Please try again.",
-              severity: "error",
-            });
-            setLoading(false);
-          }
-        }, 1000);
-      } else {
-        setSnackbar({
-          open: true,
-          message: "Please enter Student ID and password.",
+          message: "Navigation failed. Please try again.",
           severity: "error",
         });
         setLoading(false);
       }
-    } catch (error) {
-      console.error('[Login] Error in handleLogin:', error);
-      setSnackbar({
-        open: true,
-        message: "An error occurred during login. Please try again.",
-        severity: "error",
-      });
-      setLoading(false);
-    }
-  };
+    }, 1000);
+  } catch (error) {
+    console.error('[Login] Error in handleLogin:', error);
+    setSnackbar({
+      open: true,
+      message: "An error occurred during login. Please try again.",
+      severity: "error",
+    });
+    setLoading(false);
+  }
+};
 
   const [forgotOpen, setForgotOpen] = useState(false);
 
@@ -381,7 +401,7 @@ const Login = ({ onLogin }) => {
                   </Button>
                 </Box>
               </form>
-              <Box>
+              {/* <Box>
                 <img
                   src={LoginBorder}
                   alt="SDIP"
@@ -393,7 +413,7 @@ const Login = ({ onLogin }) => {
                     borderBottomLeftRadius: "30px",
                   }}
                 />
-              </Box>
+              </Box> */}
             </Grid>
             <Grid
               item
