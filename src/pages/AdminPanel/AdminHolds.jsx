@@ -238,7 +238,7 @@ const AdminHolds = () => {
     <DashboardLayout>
       <Grid container spacing={2} sx={{ background: 'linear-gradient(180deg, #f5f5f5 0%, #e0f7fa 100%)', p: 3 }}>
         <Grid item xs={12}>
-          <TitleBar title="ADMIN HOLDS MANAGEMENT" />
+          <TitleBar title="Service Management" />
         </Grid>
 
         {/* Error Display */}

@@ -108,6 +108,38 @@ const mockSubmissions = {
       emailStatus: 'failed',
     },
   ],
+  completionProgramme: [
+    {
+      id: 1,
+      studentId: 'S12345',
+      fullName: 'John Doe',
+      email: 'john.doe@example.com',
+      telephone: '+6791234567',
+      dateOfBirth: '2000-05-15',
+      postalAddress: '123 Main St, Suva',
+      programme: 'Undergraduate',
+      declarationAgreed: true,
+      applicantSignature: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      date: '2024-11-01',
+      status: 'pending',
+      emailStatus: 'sent',
+    },
+    {
+      id: 2,
+      studentId: 'S67890',
+      fullName: 'Jane Smith',
+      email: 'jane.smith@example.com',
+      telephone: '+6797654321',
+      dateOfBirth: '1999-08-22',
+      postalAddress: '456 Oak Rd, Lautoka',
+      programme: 'Postgraduate',
+      declarationAgreed: true,
+      applicantSignature: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      date: '2024-11-10',
+      status: 'pending',
+      emailStatus: 'failed',
+    },
+  ],
 };
 
 // Mock API functions
@@ -156,7 +188,7 @@ const AdminFormsServices = () => {
     newGrade: '',
   });
 
-  // State for compassionate/aegrotat status update
+  // State for application status update (for compassionateAegrotat and completionProgramme)
   const [applicationStatusUpdate, setApplicationStatusUpdate] = useState({
     submissionId: null,
     status: '',
@@ -179,7 +211,7 @@ const AdminFormsServices = () => {
   useEffect(() => {
     const sendAutoEmails = async () => {
       const updatedSubmissions = { ...submissions };
-      for (const formName of ['reconsideration', 'compassionateAegrotat']) {
+      for (const formName of ['reconsideration', 'compassionateAegrotat', 'completionProgramme']) {
         for (const submission of updatedSubmissions[formName]) {
           if (submission.emailStatus === 'pending') {
             try {
@@ -235,7 +267,7 @@ const AdminFormsServices = () => {
   };
 
   // Handle application status submission
-  const handleStatusSubmit = async (submissionId) => {
+  const handleStatusSubmit = async (submissionId, formName) => {
     if (!applicationStatusUpdate.status) {
       setFormErrors((prev) => ({ ...prev, applicationStatus: 'Please select a status.' }));
       return;
@@ -245,7 +277,7 @@ const AdminFormsServices = () => {
       await updateApplicationStatus(submissionId, applicationStatusUpdate.status);
       setSubmissions((prev) => ({
         ...prev,
-        compassionateAegrotat: prev.compassionateAegrotat.map((sub) =>
+        [formName]: prev[formName].map((sub) =>
           sub.id === submissionId ? { ...sub, status: applicationStatusUpdate.status } : sub
         ),
       }));
@@ -325,6 +357,25 @@ const AdminFormsServices = () => {
         'Reason',
         'Supporting Documents',
         'Signature',
+        'Status',
+        'Email Status',
+        'Action',
+      ],
+    },
+    {
+      name: 'completionProgramme',
+      title: 'Application for Completion of Programme',
+      columns: [
+        'Student ID',
+        'Name',
+        'Email',
+        'Telephone',
+        'Date of Birth',
+        'Postal Address',
+        'Programme',
+        'Declaration Agreed',
+        'Signature',
+        'Date',
         'Status',
         'Email Status',
         'Action',
@@ -438,7 +489,7 @@ const AdminFormsServices = () => {
                         )}
                       </TableCell>
                     </>
-                  ) : (
+                  ) : form.name === 'compassionateAegrotat' ? (
                     <>
                       <TableCell>{formatMissedExams(submission.missedExams) || 'None'}</TableCell>
                       <TableCell>{submission.missedExams.find((exam) => exam.applyingFor)?.applyingFor || 'N/A'}</TableCell>
@@ -478,7 +529,75 @@ const AdminFormsServices = () => {
                             <Button
                               variant="contained"
                               sx={{ backgroundColor: '#094c50', '&:hover': { backgroundColor: '#073a3e' } }}
-                              onClick={() => handleStatusSubmit(submission.id)}
+                              onClick={() => handleStatusSubmit(submission.id, form.name)}
+                              disabled={submissionStatus.applicationStatus === 'submitting'}
+                            >
+                              {submissionStatus.applicationStatus === 'submitting' ? 'Saving...' : 'Save'}
+                            </Button>
+                          </Box>
+                        ) : (
+                          <Button
+                            variant="outlined"
+                            sx={{ color: '#094c50', borderColor: '#094c50' }}
+                            onClick={() => setApplicationStatusUpdate({ submissionId: submission.id, status: '' })}
+                          >
+                            Update
+                          </Button>
+                        )}
+                        {submissionStatus.applicationStatus === 'success' && applicationStatusUpdate.submissionId === submission.id && (
+                          <Typography sx={{ color: (theme) => theme.palette.success.main, mt: 1 }}>
+                            Status updated successfully!
+                          </Typography>
+                        )}
+                        {submissionStatus.applicationStatus === 'error' && applicationStatusUpdate.submissionId === submission.id && (
+                          <Typography sx={{ color: (theme) => theme.palette.error.main, mt: 1 }}>
+                            {formErrors.applicationStatus}
+                          </Typography>
+                        )}
+                      </TableCell>
+                    </>
+                  ) : (
+                    <>
+                      <TableCell>{submission.dateOfBirth}</TableCell>
+                      <TableCell>{submission.postalAddress}</TableCell>
+                      <TableCell>{submission.programme}</TableCell>
+                      <TableCell>{submission.declarationAgreed ? 'Yes' : 'No'}</TableCell>
+                      <TableCell>
+                        {submission.applicantSignature ? (
+                          <img
+                            src={submission.applicantSignature}
+                            alt="Signature"
+                            style={{ height: '50px', border: '1px solid #c4c4c4' }}
+                          />
+                        ) : (
+                          'No Signature'
+                        )}
+                      </TableCell>
+                      <TableCell>{submission.date}</TableCell>
+                      <TableCell>{submission.status}</TableCell>
+                      <TableCell>
+                        {applicationStatusUpdate.submissionId === submission.id ? (
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <FormControl sx={{ minWidth: 120, mr: 1 }}>
+                              <Select
+                                value={applicationStatusUpdate.status}
+                                onChange={(e) => handleStatusChange(e.target.value)}
+                                displayEmpty
+                              >
+                                <MenuItem value="" disabled>
+                                  Select Status
+                                </MenuItem>
+                                {['Approved', 'Rejected', 'Pending'].map((status) => (
+                                  <MenuItem key={status} value={status}>
+                                    {status}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                            <Button
+                              variant="contained"
+                              sx={{ backgroundColor: '#094c50', '&:hover': { backgroundColor: '#073a3e' } }}
+                              onClick={() => handleStatusSubmit(submission.id, form.name)}
                               disabled={submissionStatus.applicationStatus === 'submitting'}
                             >
                               {submissionStatus.applicationStatus === 'submitting' ? 'Saving...' : 'Save'}
@@ -551,7 +670,7 @@ const AdminFormsServices = () => {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           {/* Header */}
-          <TitleBar title="Admin Forms Services" />
+          <TitleBar title="Forms Configuration" />
           {/* Card View or Selected Form */}
           {!selectedForm ? (
             <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -565,14 +684,26 @@ const AdminFormsServices = () => {
                       cursor: 'pointer',
                       '&:hover': { background: 'linear-gradient(135deg, #f5f7fa 0%, #e0e4ea 100%)' },
                       minHeight: '120px',
+                      display: 'flex',
+                      flexDirection: 'column',
                     }}
                     onClick={() => setSelectedForm(form.name)}
                   >
-                    <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center' }}>
-                      <DescriptionTwoToneIcon sx={{ fontSize: 48, color: '#094c50', mr: 2 }} />
+                    <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center', flex: 1 }}>
+                      <DescriptionTwoToneIcon sx={{ fontSize: 48, color: '#094c50', mr: 2, flexShrink: 0 }} />
                       <Typography
                         variant="h6"
-                        sx={{ color: '#000000', fontWeight: 'medium', textAlign: 'left' }}
+                        sx={{
+                          color: '#000000',
+                          fontWeight: 'medium',
+                          textAlign: 'left',
+                          wordBreak: 'break-word',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                        }}
                       >
                         {form.title}
                       </Typography>
