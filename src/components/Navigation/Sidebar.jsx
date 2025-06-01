@@ -53,10 +53,9 @@ const Sidebar = ({ isSidebarCollapsed }) => {
     },
     {
       icon: PersonIcon,
-      name: 'Profile',
-      onClick: () => navigate('/profile'),
-      isActive: currentPath.startsWith('/profile'),
-      allowedRoles: ['student'],
+      name: "Profile",
+      onClick: () => navigate("/update-profile"),
+      isActive: currentPath.startsWith("/update-profile"),
     },
     { kind: 'divider' },
     { kind: 'header', title: 'Academics', allowedRoles: ['student'] },
