@@ -6,8 +6,8 @@ import { useAuth } from './hooks/useAuth';
 import DashboardLayout from './components/DashboardLayout/DashboardLayout';
 import Login from './pages/Login/Login';
 import Dashboard from './pages/Dashboard/Dashboard';
-import UpdateProfile from './pages/UpdateProfile/UpdateProfile';
-import Program from './pages/Program/Program';
+import UpdateProfile from './Pages/UpdateProfile/UpdateProfile';
+import Program from './Pages/Program/Program';
 import Timetable from './pages/Timetable/Timetable';
 import Fees from './pages/Fees/Fees';
 import Enrollment from './pages/Enrollment/Enrollment';
@@ -20,9 +20,64 @@ import Forms from './pages/Forms/Forms';
 import ProtectedRoute from '../ProtectedRoute';
 
 const App = () => {
+  const [semester, setSemester] = useState("Semester I 2025");
+  const [mode, setMode] = useState("light");
+
+   const [user, setUser] = useState(() => {
+    try {
+      const userData = localStorage.getItem('user');
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      return null;
+    }
+  });
+
+  /// Load user from localStorage on mount (redundant with the initial state, can be removed)
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem("user");
+      console.log("App - Initializing user state from localStorage:", savedUser);
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    } catch (error) {
+      console.error("Error loading user from localStorage:", error);
+    }
+  }, []);
+
+  // Log user updates and sync with localStorage
+  useEffect(() => {
+    console.log("App - User state updated:", user);
+    try {
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+      } else {
+        localStorage.removeItem("user");
+      }
+    } catch (error) {
+      console.error("Error updating localStorage:", error);
+    }
+  }, [user]);
+
+  const handleLogin = (userData) => {
+    console.log("App - handleLogin called with:", userData);
+    setUser(userData);
+  };
   const [semester, setSemester] = useState('Semester I 2025');
   const [mode, setMode] = useState('light');
   const { user } = useAuth();
+
+
+  const handleLogout = () => {
+    // Clear user data and token
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // You might want to call your logout API endpoint here
+    // await logout();
+  };
+
 
   const toggleTheme = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
