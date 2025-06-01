@@ -174,7 +174,7 @@ const App = () => {
             }
           />
           <Route
-            path="/profile"
+            path="/update-profile"
             element={
               user && user.role === "student" ? (
                 <UpdateProfile studentId={user.id} />

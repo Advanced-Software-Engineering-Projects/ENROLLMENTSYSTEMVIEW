@@ -94,20 +94,24 @@ export const getProgramAudit = (studentId) => api.get(`/programs/audit?studentId
 // Students
 export const getStudent = async (studentId) => {
   return axios.get(`${API_URL}/students/${studentId}`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
   });
 };
 
 export const updateStudent = async (studentId, studentData) => {
   return axios.put(`${API_URL}/students/${studentId}`, studentData, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
   });
-};
+}
 
 export const uploadAvatar = async (studentId, formData) => {
   return axios.post(`${API_URL}/students/${studentId}/avatar`, formData, {
     headers: {
-      Authorization: `Bearer ${getToken()}`,
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
       'Content-Type': 'multipart/form-data',
     },
   });
