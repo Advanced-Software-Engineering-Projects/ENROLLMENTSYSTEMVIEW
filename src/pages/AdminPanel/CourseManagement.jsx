@@ -10,7 +10,7 @@ import TitleBar from '../../components/Titlebar/Titlebar';
 import dayjs from 'dayjs';
 import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 
-const AdminPanel = ({ toggleTheme, mode }) => {
+const CourseManagement = ({ toggleTheme, mode }) => {
   // Define courses array inside the component
   const courses = [
     { program: 'BNS', year: 1, code: 'CS111', name: 'Introduction to Computing Science' },
@@ -540,4 +540,4 @@ const AdminPanel = ({ toggleTheme, mode }) => {
   );
 };
 
-export default AdminPanel;
+export default CourseManagement;
