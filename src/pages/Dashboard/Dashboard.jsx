@@ -486,14 +486,13 @@ import PeopleIcon from '@mui/icons-material/People';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import Lottie from 'lottie-react';
-import LoadingAnimation from '../../assets/Animations/LoadingPage/LoadingAnimation.json'; // Adjust path as needed
+import LoadingAnimation from '../../assets/Animations/LoadingPage/LoadingAnimation.json';
 import {
   getEnrolledCoursesDashboard,
   getCompletedCoursesCurrentYear,
   getTotalCompletedCourses,
   getGpaData,
 } from "../../Endpoints/StudentEndpoints";
-import LoadingAnimation from '../../assets/Animations/LoadingPage/LoadingAnimation.json';
 
 
 ChartJS.register(
@@ -520,7 +519,6 @@ const IndustrialPaper = styled(Paper)(({ theme }) => ({
     boxShadow: theme.shadows[8],
   },
 }));
-
 const MetricCard = styled(Card)(({ theme }) => ({
   background: '#252B32',
   color: '#FFFFFF',
@@ -638,12 +636,8 @@ const Dashboard = ({ studentId, semester, toggleTheme, mode }) => {
   const [completedCourses, setCompletedCourses] = useState(0);
   const [totalCompletedCourses, setTotalCompletedCourses] = useState(0);
   const [gpaData, setGpaData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
-  // Get the current year
-  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     const fetchData = async () => {

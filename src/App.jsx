@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { LightModeTheme, DarkModeTheme } from '../theme';
@@ -64,10 +64,6 @@ const App = () => {
     console.log("App - handleLogin called with:", userData);
     setUser(userData);
   };
-  const [semester, setSemester] = useState('Semester I 2025');
-  const [mode, setMode] = useState('light');
-  const { user } = useAuth();
-
 
   const handleLogout = () => {
     // Clear user data and token
