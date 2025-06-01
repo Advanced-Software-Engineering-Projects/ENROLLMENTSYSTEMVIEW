@@ -44,7 +44,7 @@ const mockHolds = [
 ];
 
 // Available services for holds
-const services = ['Enrollment', 'Transcript', 'Grades', 'Fee Payments'];
+const services = ['View Course Grade', 'View Programme Structure', 'Apply for Grade Re-check', 'Apply for Graduation'];
 
 // Mock API functions
 const getStudents = async () =>
@@ -103,7 +103,7 @@ const generateHoldsPDF = (student, holds) => {
 };
 
 // AdminHolds Component
-const AdminHolds = () => {
+const ServiceManagement = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [holds, setHolds] = useState([]);
@@ -409,4 +409,4 @@ const AdminHolds = () => {
   );
 };
 
-export default AdminHolds;
+export default ServiceManagement;
