@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react';
-
-// Material UI Imports
-import { ThemeProvider } from "@mui/material/styles";
-import { useTheme } from "@mui/material/styles";
-import { LightModeTheme, DarkModeTheme } from "../theme";
-
+import React, { useState } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { LightModeTheme, DarkModeTheme } from '../theme';
+import { useAuth } from './hooks/useAuth';
 import DashboardLayout from './components/DashboardLayout/DashboardLayout';
 import Login from './pages/Login/Login';
 import Dashboard from './pages/Dashboard/Dashboard';
@@ -17,10 +14,10 @@ import Enrollment from './pages/Enrollment/Enrollment';
 import GradesPage from './pages/GradesPage/GradesPage';
 import AdminPanel from './pages/AdminPanel/AdminPanel';
 import StudentRecords from './pages/AdminPanel/StudentRecords';
-import AdminDashboard from './pages/Dashboard/AdminDashboard';
-import Forms from './pages/Forms/Forms';
 import AdminFormsServices from './pages/AdminPanel/AdminFormsServices';
 import AdminHolds from './pages/AdminPanel/AdminHolds';
+import Forms from './pages/Forms/Forms';
+import ProtectedRoute from '../ProtectedRoute';
 
 const App = () => {
   const [semester, setSemester] = useState("Semester I 2025");
@@ -67,6 +64,10 @@ const App = () => {
     console.log("App - handleLogin called with:", userData);
     setUser(userData);
   };
+  const [semester, setSemester] = useState('Semester I 2025');
+  const [mode, setMode] = useState('light');
+  const { user } = useAuth();
+
 
   const handleLogout = () => {
     // Clear user data and token
@@ -79,171 +80,118 @@ const App = () => {
 
 
   const toggleTheme = () => {
-    setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
+    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
   };
 
-  const theme = mode === "light" ? LightModeTheme : DarkModeTheme;
+  const theme = mode === 'light' ? LightModeTheme : DarkModeTheme;
 
   return (
-    
     <ThemeProvider theme={theme}>
       <Router>
         <Routes>
+          <Route path='/login' element={<Login />} />
           <Route
-            path="/login"
-            element={<Login onLogin={handleLogin} />}
-          />
-           <Route
-            path="/admin-dashboard"
+            path='/dashboard'
             element={
-              user && user.role === "admin" ? (
-                <AdminDashboard
-                  toggleTheme={toggleTheme}
-                  mode={mode}
-                />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/admin-panel"
-            element={
-              user && user.role === "admin" ? (
-                <AdminPanel
-                  toggleTheme={toggleTheme}
-                  mode={mode}
-                />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/student-records"
-            element={
-              user && user.role === "admin" ? (
-                <StudentRecords
-                  toggleTheme={toggleTheme}
-                  mode={mode}
-                />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/admin-forms"
-            element={
-              user && user.role === "admin" ? (
-                <AdminFormsServices
-                  toggleTheme={toggleTheme}
-                  mode={mode}
-                />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/admin-holds"
-            element={
-              user && user.role === "admin" ? (
-                <AdminHolds
-                  toggleTheme={toggleTheme}
-                  mode={mode}
-                />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              user && user.role === "student" ? (
+              <ProtectedRoute requiredRoles={['student', 'admin']}>
                 <Dashboard
-                  studentId={user.id}
+                  studentId={user?.id}
                   semester={semester}
                   toggleTheme={toggleTheme}
                   mode={mode}
                 />
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              </ProtectedRoute>
             }
           />
           <Route
-            path="/profile"
+            path='/profile'
             element={
-              user && user.role === "student" ? (
-                <UpdateProfile studentId={user.id} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <ProtectedRoute requiredRoles={['student']}>
+                <UpdateProfile studentId={user?.id} toggleTheme={toggleTheme} mode={mode}/>
+              </ProtectedRoute>
             }
           />
           <Route
-            path="/program"
+            path='/program'
             element={
-              user && user.role === "student" ? (
-                <Program studentId={user.id} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <ProtectedRoute requiredRoles={['student']}>
+                <Program studentId={user?.id} toggleTheme={toggleTheme} mode={mode}/>
+              </ProtectedRoute>
             }
           />
           <Route
-            path="/enrollment"
+            path='/enrollment'
             element={
-              user && user.role === "student" ? (
-                <Enrollment studentId={user.id} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <ProtectedRoute requiredRoles={['student']}>
+                <Enrollment studentId={user?.id} toggleTheme={toggleTheme} mode={mode}/>
+              </ProtectedRoute>
             }
           />
           <Route
-            path="/timetable"
+            path='/timetable'
             element={
-              user && user.role === "student" ? (
-                <Timetable studentId={user.id} semester={semester} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <ProtectedRoute requiredRoles={['student']}>
+                <Timetable studentId={user?.id} semester={semester} toggleTheme={toggleTheme} mode={mode}/>
+              </ProtectedRoute>
             }
           />
           <Route
-            path="/grades-page"
+            path='/grades-page'
             element={
-              user && user.role === "student" ? (
-                <GradesPage studentId={user.id} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <ProtectedRoute requiredRoles={['student']}>
+                <GradesPage studentId={user?.id} toggleTheme={toggleTheme} mode={mode} />
+              </ProtectedRoute>
             }
           />
           <Route
-            path="/forms"
+            path='/forms'
             element={
-              user && user.role === "student" ? (
-                <Forms studentId={user.id} semester={semester} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <ProtectedRoute requiredRoles={['student']}>
+                <Forms studentId={user?.id} semester={semester} toggleTheme={toggleTheme} mode={mode} />
+              </ProtectedRoute>
             }
           />
           <Route
-            path="/fees"
+            path='/fees'
             element={
-              user && user.role === "student" ? (
-                <Fees studentId={user.id} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <ProtectedRoute requiredRoles={['student']}>
+                <Fees studentId={user?.id} toggleTheme={toggleTheme} mode={mode}/>
+              </ProtectedRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route
+            path='/admin-panel'
+            element={
+              <ProtectedRoute requiredRoles={['admin']}>
+                <AdminPanel toggleTheme={toggleTheme} mode={mode} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/student-records'
+            element={
+              <ProtectedRoute requiredRoles={['admin']}>
+                <StudentRecords toggleTheme={toggleTheme} mode={mode} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/admin-forms'
+            element={
+              <ProtectedRoute requiredRoles={['admin']}>
+                <AdminFormsServices toggleTheme={toggleTheme} mode={mode} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/admin-holds'
+            element={
+              <ProtectedRoute requiredRoles={['admin']}>
+                <AdminHolds toggleTheme={toggleTheme} mode={mode} />
+              </ProtectedRoute>
+            }
+          />
+          <Route path='/' element={<Navigate to='/login' replace />} />
         </Routes>
       </Router>
     </ThemeProvider>

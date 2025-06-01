@@ -15,6 +15,8 @@ import {
   Radio,
   RadioGroup,
   FormControlLabel,
+  Checkbox,
+  FormGroup,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -88,16 +90,32 @@ const FormsPage = () => {
     date: null,
   });
 
+  // State for Application for Completion of Programme Form
+  const [completionProgramme, setCompletionProgramme] = useState({
+    studentId: '',
+    fullName: '',
+    email: '',
+    telephone: '',
+    dateOfBirth: null,
+    postalAddress: '',
+    programme: '',
+    declarationAgreed: false,
+    applicantSignature: '',
+    date: null,
+  });
+
   // State for form submission status
   const [submissionStatus, setSubmissionStatus] = useState({
     reconsideration: null,
     compassionateAegrotat: null,
+    completionProgramme: null,
   });
 
   // State for form errors
   const [formErrors, setFormErrors] = useState({
     reconsideration: '',
     compassionateAegrotat: '',
+    completionProgramme: '',
   });
 
   // Validate form data
@@ -115,7 +133,7 @@ const FormsPage = () => {
       if (!/^\+\d{7,15}$/.test(formData.telephone)) {
         return 'Telephone must include country code and 7-15 digits.';
       }
-    } else {
+    } else if (formName === 'compassionateAegrotat') {
       const textFields = ['studentId', 'fullName', 'email', 'campus', 'telephone', 'postalAddress', 'semester', 'reason', 'applicantSignature'];
       if (textFields.some((field) => !formData[field])) {
         return `All required text fields are required for ${formName} form.`;
@@ -140,6 +158,20 @@ const FormsPage = () => {
           return `All fields for Missed Exam ${i + 1} must be filled if any are provided.`;
         }
       }
+    } else if (formName === 'completionProgramme') {
+      const textFields = ['studentId', 'fullName', 'email', 'telephone', 'programme', 'applicantSignature'];
+      if (textFields.some((field) => !formData[field])) {
+        return `All required text fields are required for ${formName} form.`;
+      }
+      if (!formData.dateOfBirth) return 'Date of birth is required.';
+      if (!formData.date) return 'Application date is required.';
+      if (!formData.declarationAgreed) return 'You must agree to the declaration.';
+      if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) {
+        return 'Invalid email format.';
+      }
+      if (!/^\+\d{7,15}$/.test(formData.telephone)) {
+        return 'Telephone must include country code and 7-15 digits.';
+      }
     }
     return '';
   };
@@ -147,7 +179,7 @@ const FormsPage = () => {
   // Handle input changes
   const handleInputChange = (setForm, field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    setFormErrors((prev) => ({ ...prev, reconsideration: '', compassionateAegrotat: '' }));
+    setFormErrors((prev) => ({ ...prev, reconsideration: '', compassionateAegrotat: '', completionProgramme: '' }));
   };
 
   // Handle missed exam input changes
@@ -164,13 +196,13 @@ const FormsPage = () => {
   // Handle file input changes
   const handleFileChange = (setForm, field, file) => {
     setForm((prev) => ({ ...prev, [field]: file }));
-    setFormErrors((prev) => ({ ...prev, reconsideration: '', compassionateAegrotat: '' }));
+    setFormErrors((prev) => ({ ...prev, reconsideration: '', compassionateAegrotat: '', completionProgramme: '' }));
   };
 
   // Handle date changes
   const handleDateChange = (setForm, field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    setFormErrors((prev) => ({ ...prev, reconsideration: '', compassionateAegrotat: '' }));
+    setFormErrors((prev) => ({ ...prev, reconsideration: '', compassionateAegrotat: '', completionProgramme: '' }));
   };
 
   // Handle missed exam date changes
@@ -188,7 +220,11 @@ const FormsPage = () => {
   const handleSignatureSave = () => {
     if (sigCanvasRef.current && !sigCanvasRef.current.isEmpty()) {
       const signatureData = sigCanvasRef.current.getTrimmedCanvas().toDataURL('image/png');
-      setCompassionateAegrotat((prev) => ({ ...prev, applicantSignature: signatureData }));
+      if (selectedForm === 'compassionateAegrotat') {
+        setCompassionateAegrotat((prev) => ({ ...prev, applicantSignature: signatureData }));
+      } else if (selectedForm === 'completionProgramme') {
+        setCompletionProgramme((prev) => ({ ...prev, applicantSignature: signatureData }));
+      }
     }
   };
 
@@ -196,7 +232,11 @@ const FormsPage = () => {
   const handleSignatureClear = () => {
     if (sigCanvasRef.current) {
       sigCanvasRef.current.clear();
-      setCompassionateAegrotat((prev) => ({ ...prev, applicantSignature: '' }));
+      if (selectedForm === 'compassionateAegrotat') {
+        setCompassionateAegrotat((prev) => ({ ...prev, applicantSignature: '' }));
+      } else if (selectedForm === 'completionProgramme') {
+        setCompletionProgramme((prev) => ({ ...prev, applicantSignature: '' }));
+      }
     }
   };
 
@@ -226,7 +266,7 @@ const FormsPage = () => {
       await handleFormSubmit(formDataToSubmit, formName);
       setSubmissionStatus((prev) => ({ ...prev, [formName]: 'success' }));
       setForm(resetData);
-      if (formName === 'compassionateAegrotat' && sigCanvasRef.current) {
+      if ((formName === 'compassionateAegrotat' || formName === 'completionProgramme') && sigCanvasRef.current) {
         sigCanvasRef.current.clear();
       }
       setTimeout(() => {
@@ -272,6 +312,18 @@ const FormsPage = () => {
       ],
       reason: '',
       supportingDocuments: null,
+      applicantSignature: '',
+      date: null,
+    },
+    completionProgramme: {
+      studentId: '',
+      fullName: '',
+      email: '',
+      telephone: '',
+      dateOfBirth: null,
+      postalAddress: '',
+      programme: '',
+      declarationAgreed: false,
       applicantSignature: '',
       date: null,
     },
@@ -375,6 +427,62 @@ const FormsPage = () => {
             },
             { label: 'Attach Supporting Documents', name: 'supportingDocuments', type: 'file', grid: { xs: 12 } },
             { label: 'Applicant’s Signature', name: 'applicantSignature', type: 'signature', grid: { xs: 12 } },
+            { label: 'Date', name: 'date', type: 'date', grid: { xs: 12, sm: 6 } },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'completionProgramme',
+      title: 'Application for Completion of Programme',
+      state: completionProgramme,
+      setState: setCompletionProgramme,
+      sections: [
+        {
+          title: 'Personal Details',
+          note: (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Note: For Preliminary Certificate, students enrolled from 2018 onwards are eligible.
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'error.main', mt: 1 }}>
+                Laucala Campus: Applications for this ceremony is open and will close on 30th June 2025<br />
+                Solomon Islands Campus: Applications for this ceremony is open and will close on 4th of July 2025<br />
+                Tonga Campus: Applications for this ceremony is open and will close on 1st of August 2025
+              </Typography>
+            </Box>
+          ),
+          fields: [
+            { label: 'Student ID Number', name: 'studentId', type: 'text', grid: { xs: 12, sm: 6 } },
+            { label: 'Name', name: 'fullName', type: 'text', grid: { xs: 12, sm: 6 } },
+            { label: 'Email', name: 'email', type: 'email', grid: { xs: 12, sm: 6 } },
+            { label: 'Telephone', name: 'telephone', type: 'phone', grid: { xs: 12, sm: 6 } },
+            { label: 'Date of Birth', name: 'dateOfBirth', type: 'date', grid: { xs: 12, sm: 6 } },
+            { label: 'Postal Address', name: 'postalAddress', type: 'text', multiline: true, rows: 3, grid: { xs: 12 } },
+            {
+              label: 'Programme',
+              name: 'programme',
+              type: 'select',
+              options: ['Pacific TAFE', 'Undergraduate', 'Postgraduate'],
+              grid: { xs: 12, sm: 6 },
+            },
+          ],
+        },
+        {
+          title: 'Declaration',
+          note: (
+            <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+              I certify that the particulars in this form are correct, I have read the notes above, and I will abide by the rules set out in the Statutes, Ordinances Regulations and the Charter of the University of the South Pacific.
+            </Typography>
+          ),
+          fields: [
+            {
+              label: 'I have read the above information',
+              name: 'declarationAgreed',
+              type: 'checkbox',
+              grid: { xs: 12 },
+            },
+            { label: 'Student’s Signature', name: 'applicantSignature', type: 'signature', grid: { xs: 12 } },
             { label: 'Date', name: 'date', type: 'date', grid: { xs: 12, sm: 6 } },
           ],
         },
@@ -513,6 +621,20 @@ const FormsPage = () => {
                           </Typography>
                         )}
                       </Box>
+                    ) : field.type === 'checkbox' ? (
+                      <FormControl error={!!formErrors[form.name]}>
+                        <FormGroup>
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={form.state[field.name]}
+                                onChange={(e) => handleInputChange(form.setState, field.name, e.target.checked)}
+                              />
+                            }
+                            label={field.label}
+                          />
+                        </FormGroup>
+                      </FormControl>
                     ) : field.type === 'missedExam' ? (
                       <Box>
                         {field.sets.map((set) => (

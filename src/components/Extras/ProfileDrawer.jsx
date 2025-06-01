@@ -34,7 +34,7 @@ const ProfileDrawer = ({ open, toggleDrawer, user }) => {
         {/* User Info */}
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
           <Avatar
-            sx={{ width: 80, height: 80, mb: 1 }}
+            sx={{ width: 150, height: 150, mb: 1 }}
             src={profilePicUrl}
             alt={user ? `${user.firstName} ${user.lastName}` : 'User'}
           />
