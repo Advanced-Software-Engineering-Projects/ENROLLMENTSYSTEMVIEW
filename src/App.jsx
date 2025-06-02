@@ -85,7 +85,7 @@ const App = () => {
     <ThemeProvider theme={theme}>
       <Router>
         <Routes>
-          <Route path='/login' element={<Login />} />
+          <Route path='/login' element={<Login onLogin={handleLogin} />} />
           <Route
             path='/dashboard'
             element={
@@ -100,7 +100,7 @@ const App = () => {
             }
           />
           <Route
-            path='/profile'
+            path='/update-profile'
             element={
               <ProtectedRoute requiredRoles={['student']}>
                 <UpdateProfile studentId={user?.id} toggleTheme={toggleTheme} mode={mode}/>
