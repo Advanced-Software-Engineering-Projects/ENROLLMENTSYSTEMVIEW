@@ -11,13 +11,12 @@
    
 
 3. Start the development server:
-   bash
-   npm start
+   npm run dev
    
 
 4. The React app will open in the browser at:
    
-   http://localhost:3000
+   http://localhost:5173
    
 
 5. If needed, update the API endpoint in:
@@ -45,7 +44,7 @@
   - `axios`
   - `react-router-dom`
   - `tailwindcss` (if styling is used)
-  - `@mui/material` or `bootstrap` (optional UI frameworks)
+  - `@mui/material` (optional UI frameworks)
 
 
 ---
