@@ -92,30 +92,11 @@ export const getGpaTrend = (studentId) => api.get(`/grades/gpa-trend?studentId=$
 export const getProgramAudit = (studentId) => api.get(`/programs/audit?studentId=${studentId}`);
 
 // Students
-export const getStudent = async (studentId) => {
-  return axios.get(`${API_URL}/students/${studentId}`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
-    },
-  });
-};
-
-export const updateStudent = async (studentId, studentData) => {
-  return axios.put(`${API_URL}/students/${studentId}`, studentData, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
-    },
-  });
-}
-
-export const uploadAvatar = async (studentId, formData) => {
-  return axios.post(`${API_URL}/students/${studentId}/avatar`, formData, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-};
+export const getStudent = (studentId) => api.get(`/students/${studentId}`);
+export const updateStudent = (studentId, studentData) => api.put(`/students/${studentId}`, studentData);
+export const uploadAvatar = (studentId, formData) => api.post(`/students/${studentId}/avatar`, formData, {
+  headers: { 'Content-Type': 'multipart/form-data' },
+});
 
 // Timetables
 export const getTimetables = (studentId, semester) => api.get(`/timetables?studentId=${studentId}&semester=${semester}`);
