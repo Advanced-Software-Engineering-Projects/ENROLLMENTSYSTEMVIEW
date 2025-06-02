@@ -446,6 +446,7 @@
 
 
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -486,15 +487,21 @@ import PeopleIcon from '@mui/icons-material/People';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import Lottie from 'lottie-react';
-import LoadingAnimation from '../../assets/Animations/LoadingPage/LoadingAnimation.json'; // Adjust path as needed
+import LoadingAnimation from '../../assets/Animations/LoadingPage/LoadingAnimation.json';
 import {
   getEnrolledCoursesDashboard,
   getCompletedCoursesCurrentYear,
   getTotalCompletedCourses,
   getGpaData,
 } from "../../Endpoints/StudentEndpoints";
-import LoadingAnimation from '../../assets/Animations/LoadingPage/LoadingAnimation.json';
-
+import {
+  getRegisteredStudentsCount,
+  getActiveCoursesCount,
+  getPendingApprovalsCount,
+  getPendingRequests,
+  getEnrollmentData,
+  getCompletionRateData,
+} from "../../Endpoints/AdminEndpoints";
 
 ChartJS.register(
   ArcElement,
@@ -508,7 +515,6 @@ ChartJS.register(
   Title
 );
 
-// Styled components for industrial look
 const IndustrialPaper = styled(Paper)(({ theme }) => ({
   background: 'linear-gradient(145deg, #2A2E35 0%, #1A2027 100%)',
   border: '1px solid #3A3F47',
@@ -529,51 +535,8 @@ const MetricCard = styled(Card)(({ theme }) => ({
   boxShadow: theme.shadows[4],
 }));
 
-
-// Mock data for students
-const mockEnrolledCourses = [
-  { courseId: 1, courseCode: 'CS111', courseName: 'Introduction to Programming', dueDate: '2025-06-01' },
-  { courseId: 2, courseCode: 'MA111', courseName: 'Calculus I', dueDate: '2025-06-05' },
-  { courseId: 3, courseCode: 'ST131', courseName: 'Statistics I', dueDate: '2025-06-10' },
-];
-const mockCompletedCourses = { count: 4 };
-const mockTotalCompletedCourses = { count: 12 };
-const mockGpaData = [
-  { semester: 'Semester 1', gpa: 2.5 },
-  { semester: 'Semester 2', gpa: 3.0 },
-  { semester: 'Semester 3', gpa: 3.5 },
-  { semester: 'Semester 4', gpa: 4.0 },
-  { semester: 'Semester 5', gpa: 4.5 },
-];
-
-// Mock data for admins
-const mockRegisteredStudents = { count: 1200 };
-const mockActiveCourses = { count: 45 };
-const mockPendingApprovals = { count: 15 };
-const mockPendingRequests = [
-  { id: 1, studentId: 'S123456', courseCode: 'CS111', requestType: 'Course Registration', date: '2025-05-20' },
-  { id: 2, studentId: 'S789012', courseCode: 'MA111', requestType: 'Enrollment', date: '2025-05-21' },
-  { id: 3, studentId: 'S345678', courseCode: 'ST131', requestType: 'Course Registration', date: '2025-05-22' },
-];
-const mockEnrollmentData = [
-  { semester: 'Semester 1', students: 1000 },
-  { semester: 'Semester 2', students: 1050 },
-  { semester: 'Semester 3', students: 1100 },
-  { semester: 'Semester 4', students: 1150 },
-  { semester: 'Semester 5', students: 1200 },
-];
-const mockCompletionRateData = [
-  { semester: 'Semester 1', rate: 85 },
-  { semester: 'Semester 2', rate: 88 },
-  { semester: 'Semester 3', rate: 90 },
-  { semester: 'Semester 4', rate: 92 },
-  { semester: 'Semester 5', rate: 95 },
-];
-
-
 const localizer = momentLocalizer(moment);
 
-// Custom Toolbar Component
 const CustomToolbar = ({ label, onNavigate }) => {
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -638,27 +601,56 @@ const Dashboard = ({ studentId, semester, toggleTheme, mode }) => {
   const [completedCourses, setCompletedCourses] = useState(0);
   const [totalCompletedCourses, setTotalCompletedCourses] = useState(0);
   const [gpaData, setGpaData] = useState([]);
+  const [registeredStudents, setRegisteredStudents] = useState(0);
+  const [activeCourses, setActiveCourses] = useState(0);
+  const [pendingApprovals, setPendingApprovals] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [enrollmentData, setEnrollmentData] = useState([]);
+  const [completionRateData, setCompletionRateData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
-  // Get the current year
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [enrolled, completed, totalCompleted, gpa] = await Promise.all([
-          getEnrolledCoursesDashboard(),
-          getCompletedCoursesCurrentYear(),
-          getTotalCompletedCourses(),
-          getGpaData(),
-        ]);
+        if (isAdmin) {
+          const [
+            registeredStudentsRes,
+            activeCoursesRes,
+            pendingApprovalsRes,
+            pendingRequestsRes,
+            enrollmentDataRes,
+            completionRateDataRes,
+          ] = await Promise.all([
+            getRegisteredStudentsCount(),
+            getActiveCoursesCount(),
+            getPendingApprovalsCount(),
+            getPendingRequests(),
+            getEnrollmentData(),
+            getCompletionRateData(),
+          ]);
 
-        setEnrolledCourses(enrolled.data);
-        setCompletedCourses(completed.data.count);
-        setTotalCompletedCourses(totalCompleted.data.count);
-        setGpaData(gpa.data);
+          setRegisteredStudents(registeredStudentsRes.data.count);
+          setActiveCourses(activeCoursesRes.data.count);
+          setPendingApprovals(pendingApprovalsRes.data.count);
+          setPendingRequests(pendingRequestsRes.data);
+          setEnrollmentData(enrollmentDataRes.data);
+          setCompletionRateData(completionRateDataRes.data);
+        } else {
+          const [enrolled, completed, totalCompleted, gpa] = await Promise.all([
+            getEnrolledCoursesDashboard(),
+            getCompletedCoursesCurrentYear(),
+            getTotalCompletedCourses(),
+            getGpaData(),
+          ]);
+
+          setEnrolledCourses(enrolled.data);
+          setCompletedCourses(completed.data.count);
+          setTotalCompletedCourses(totalCompleted.data.count);
+          setGpaData(gpa.data);
+        }
         setLoading(false);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
@@ -668,36 +660,7 @@ const Dashboard = ({ studentId, semester, toggleTheme, mode }) => {
     };
 
     fetchData();
-  }, []);
-  const [registeredStudents, setRegisteredStudents] = useState(0);
-  const [activeCourses, setActiveCourses] = useState(0);
-  const [pendingApprovals, setPendingApprovals] = useState(0);
-  const [pendingRequests, setPendingRequests] = useState([]);
-  const [enrollmentData, setEnrollmentData] = useState([]);
-  const [completionRateData, setCompletionRateData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const currentYear = new Date().getFullYear();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isAdmin) {
-        setRegisteredStudents(mockRegisteredStudents.count);
-        setActiveCourses(mockActiveCourses.count);
-        setPendingApprovals(mockPendingApprovals.count);
-        setPendingRequests(mockPendingRequests);
-        setEnrollmentData(mockEnrollmentData);
-        setCompletionRateData(mockCompletionRateData);
-      } else {
-        setEnrolledCourses(mockEnrolledCourses);
-        setCompletedCourses(mockCompletedCourses.count);
-        setTotalCompletedCourses(mockTotalCompletedCourses.count);
-        setGpaData(mockGpaData);
-      }
-      setLoading(false);
-    }, 3000);
-    return () => clearTimeout(timer);
   }, [isAdmin]);
-
 
   if (loading) {
     return (
@@ -706,7 +669,6 @@ const Dashboard = ({ studentId, semester, toggleTheme, mode }) => {
       </Box>
     );
   }
-
 
   if (error) {
     return (
@@ -884,7 +846,6 @@ const Dashboard = ({ studentId, semester, toggleTheme, mode }) => {
           }
         `}
       </style>
-      {/* Welcome Section */}
       <IndustrialPaper sx={{ p: 3, mb: 4, background: 'linear-gradient(180deg, #dedede 0%, #094c50 100%)' }}>
         <CardContent>
           <Typography variant="h5" gutterBottom sx={{ color: '#000', fontWeight: 'bold', fontSize: '2rem' }}>
@@ -898,7 +859,6 @@ const Dashboard = ({ studentId, semester, toggleTheme, mode }) => {
         </CardContent>
       </IndustrialPaper>
 
-      {/* Metrics Section */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {isAdmin ? (
           <>
@@ -975,7 +935,7 @@ const Dashboard = ({ studentId, semester, toggleTheme, mode }) => {
                     </Typography>
                   </Box>
                   <Typography variant="h4" sx={{ color: '#FFFFFF', fontSize: '2.5rem', fontWeight: 700 }}>
-                    {completedCourses}
+                    {completedCourses > 0 ? completedCourses : 'In Progress'}
                   </Typography>
                 </CardContent>
               </MetricCard>
@@ -999,7 +959,6 @@ const Dashboard = ({ studentId, semester, toggleTheme, mode }) => {
         )}
       </Grid>
 
-      {/* Charts Section */}
       <Grid container spacing={3}>
         {isAdmin ? (
           <>

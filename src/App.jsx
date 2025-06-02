@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { LightModeTheme, DarkModeTheme } from '../theme';
@@ -12,10 +12,10 @@ import Timetable from './pages/Timetable/Timetable';
 import Fees from './pages/Fees/Fees';
 import Enrollment from './pages/Enrollment/Enrollment';
 import GradesPage from './pages/GradesPage/GradesPage';
-import AdminPanel from './pages/AdminPanel/AdminPanel';
+import CourseManagement from './pages/AdminPanel/CourseManagement';
 import StudentRecords from './pages/AdminPanel/StudentRecords';
-import AdminFormsServices from './pages/AdminPanel/AdminFormsServices';
-import AdminHolds from './pages/AdminPanel/AdminHolds';
+import FormsConfiguration from './pages/AdminPanel/FormsConfiguration';
+import ServiceManagement from './pages/AdminPanel/ServiceManagement';
 import Forms from './pages/Forms/Forms';
 import ProtectedRoute from '../ProtectedRoute';
 
@@ -64,10 +64,6 @@ const App = () => {
     console.log("App - handleLogin called with:", userData);
     setUser(userData);
   };
-  const [semester, setSemester] = useState('Semester I 2025');
-  const [mode, setMode] = useState('light');
-  const { user } = useAuth();
-
 
   const handleLogout = () => {
     // Clear user data and token
@@ -89,7 +85,7 @@ const App = () => {
     <ThemeProvider theme={theme}>
       <Router>
         <Routes>
-          <Route path='/login' element={<Login />} />
+          <Route path='/login' element={<Login onLogin={handleLogin} />} />
           <Route
             path='/dashboard'
             element={
@@ -104,7 +100,7 @@ const App = () => {
             }
           />
           <Route
-            path='/profile'
+            path='/update-profile'
             element={
               <ProtectedRoute requiredRoles={['student']}>
                 <UpdateProfile studentId={user?.id} toggleTheme={toggleTheme} mode={mode}/>
@@ -160,10 +156,10 @@ const App = () => {
             }
           />
           <Route
-            path='/admin-panel'
+            path='/course-management'
             element={
               <ProtectedRoute requiredRoles={['admin']}>
-                <AdminPanel toggleTheme={toggleTheme} mode={mode} />
+                <CourseManagement toggleTheme={toggleTheme} mode={mode} />
               </ProtectedRoute>
             }
           />
@@ -176,18 +172,18 @@ const App = () => {
             }
           />
           <Route
-            path='/admin-forms'
+            path='/forms-configuration'
             element={
               <ProtectedRoute requiredRoles={['admin']}>
-                <AdminFormsServices toggleTheme={toggleTheme} mode={mode} />
+                <FormsConfiguration toggleTheme={toggleTheme} mode={mode} />
               </ProtectedRoute>
             }
           />
           <Route
-            path='/admin-holds'
+            path='/service-management'
             element={
               <ProtectedRoute requiredRoles={['admin']}>
-                <AdminHolds toggleTheme={toggleTheme} mode={mode} />
+                <ServiceManagement toggleTheme={toggleTheme} mode={mode} />
               </ProtectedRoute>
             }
           />
