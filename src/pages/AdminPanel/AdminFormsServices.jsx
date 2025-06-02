@@ -175,7 +175,7 @@ const sendEmail = async (submissionId, formName, studentEmail) => {
   });
 };
 
-const FormsConfiguration = () => {
+const AdminFormsServices = () => {
   // State for selected form type (null for card view, or form name)
   const [selectedForm, setSelectedForm] = useState(null);
 
@@ -721,4 +721,4 @@ const FormsConfiguration = () => {
   );
 };
 
-export default FormsConfiguration;
+export default AdminFormsServices;
