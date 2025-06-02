@@ -44,7 +44,7 @@ const mockHolds = [
 ];
 
 // Available services for holds
-const services = ['View Course Grade', 'View Programme Structure', 'Apply for Grade Re-check', 'Apply for Graduation'];
+const services = ['Enrollment', 'Transcript', 'Grades', 'Fee Payments'];
 
 // Mock API functions
 const getStudents = async () =>

@@ -53,10 +53,9 @@ const Sidebar = ({ isSidebarCollapsed }) => {
     },
     {
       icon: PersonIcon,
-      name: 'Profile',
-      onClick: () => navigate('/profile'),
-      isActive: currentPath.startsWith('/profile'),
-      allowedRoles: ['student'],
+      name: "Profile",
+      onClick: () => navigate("/update-profile"),
+      isActive: currentPath.startsWith("/update-profile"),
     },
     { kind: 'divider' },
     { kind: 'header', title: 'Academics', allowedRoles: ['student'] },
@@ -107,8 +106,8 @@ const Sidebar = ({ isSidebarCollapsed }) => {
     {
       icon: AdminPanelSettingsIcon,
       name: 'Course Management',
-      onClick: () => navigate('/course-management'),
-      isActive: currentPath.startsWith('/course-management'),
+      onClick: () => navigate('/admin-panel'),
+      isActive: currentPath.startsWith('/admin-panel'),
       allowedRoles: ['admin'],
     },
     {
@@ -121,15 +120,15 @@ const Sidebar = ({ isSidebarCollapsed }) => {
     {
       icon: BlockTwoToneIcon,
       name: 'Service Management',
-      onClick: () => navigate('/service-management'),
-      isActive: currentPath.startsWith('/service-management'),
+      onClick: () => navigate('/admin-holds'),
+      isActive: currentPath.startsWith('/admin-holds'),
       allowedRoles: ['admin'],
     },
     {
       icon: DescriptionTwoToneIcon,
       name: 'Forms Configuration',
-      onClick: () => navigate('/forms-configuration'),
-      isActive: currentPath.startsWith('/forms-configuration'),
+      onClick: () => navigate('/admin-forms'),
+      isActive: currentPath.startsWith('/admin-forms'),
       allowedRoles: ['admin'],
     },
   ];
