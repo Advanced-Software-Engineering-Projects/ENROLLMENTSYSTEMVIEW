@@ -1068,7 +1068,6 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import ForgotPasswordDialog from "../../components/Dialogs/ForgotPasswordDialog";
 import { login, resetPassword } from "../../Endpoints/AuthEndpoints";
-import { jwtDecode } from "jwt-decode"; 
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -1092,162 +1091,157 @@ const Login = ({ onLogin }) => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    console.log("[Login] handleLogin called with studentId:", studentId);
-    setLoading(true);
+const handleLogin = async (e) => {
+  e.preventDefault(); // Prevent default form submission to avoid page reload
+  console.log('[Login] handleLogin called with studentId:', studentId);
+  setLoading(true);
 
-    try {
-      if (!studentId || !password) {
-        setSnackbar({
-          open: true,
-          message: "Please enter Student ID/Email and password.",
-          severity: "error",
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Validate Student ID format: S + 8 digits + @student.usp.ac.fj or Admin email
-      const studentIdRegex = /^S\d{8}@student\.usp\.ac\.fj$/;
-      const isStudent = studentIdRegex.test(studentId);
-      const isAdmin = studentId === "Admin@usp.ac.fj";
-
-      if (!isStudent && !isAdmin) {
-        setSnackbar({
-          open: true,
-          message: "Invalid Student ID or Admin ID format.",
-          severity: "error",
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Prepare login DTO
-      const loginDto = {
-        email: studentId, // Assuming API expects email field
-        password,
-      };
-
-      // Call login API
-      const response = await login(loginDto);
-
-      // Extract token from response
-      const { token } = response.data;
-      if (!token) {
-        throw new Error("Invalid response from server: Missing token");
-      }
-
-      // Decode token to get user details
-      const decoded = jwtDecode(token);
-      const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-      if (!role) {
-        throw new Error("Missing role in token");
-      }
-
-      const user = {
-        id: decoded.sub,
-        email: decoded.email,
-        role: role,
-      };
-
-      // Store token and user data in localStorage
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      // Call onLogin prop with user data
-      onLogin(user);
-
+  try {
+    // Validate inputs before proceeding
+    if (!studentId || !password) {
       setSnackbar({
         open: true,
-        message: "Login successful! Redirecting...",
-        severity: "success",
-      });
-
-      console.log(
-        "[Login] Navigating to:",
-        user.role === "admin" ? "/admin-dashboard" : "/dashboard"
-      );
-
-      setTimeout(() => {
-        try {
-          navigate(user.role === "admin" ? "/admin-dashboard" : "/dashboard");
-        } catch (navError) {
-          console.error("[Login] Navigation error:", navError);
-          setSnackbar({
-            open: true,
-            message: "Navigation failed. Please try again.",
-            severity: "error",
-          });
-          setLoading(false);
-        }
-      }, 1000);
-    } catch (error) {
-      console.error("[Login] Error in handleLogin:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Invalid credentials or server error. Please try again.";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
+        message: "Please enter both Student ID/Email and password.",
         severity: "error",
       });
       setLoading(false);
+      return;
     }
-  };
+
+    // Validate email/student ID format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+    const studentIdRegex = /^[sS]\d{8}$/; 
+    const isValidEmail = emailRegex.test(studentId);
+    const isValidStudentId = studentIdRegex.test(studentId);
+
+    if (!isValidEmail && !isValidStudentId) {
+      setSnackbar({
+        open: true,
+        message: "Please enter a valid Student ID (e.g., s12345678) or email address.",
+        severity: "error",
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Validate password (e.g., minimum length)
+    if (password.length < 6) {
+      setSnackbar({
+        open: true,
+        message: "Password must be at least 6 characters long.",
+        severity: "error",
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Make API call to login endpoint
+    const response = await login({
+      email: studentId,
+      password: password,
+    });
+
+    // Check if response contains the expected data
+    if (!response.data) {
+      throw new Error("Invalid response from server");
+    }
+
+    // Extract token and user data from response
+    const token = response.data.token || response.data.accessToken;
+    const userData = response.data.user || {
+      id: studentId,
+      email: studentId,
+      role: studentId === "Admin@usp.ac.fj" ? "admin" : "student",
+      name: studentId === "Admin@usp.ac.fj" ? "Admin User" : `Student ${studentId.split('@')[0]}`,
+      firstName: studentId === "Admin@usp.ac.fj" ? "Admin" : "Student",
+      lastName: studentId === "Admin@usp.ac.fj" ? "User" : studentId.split('@')[0],
+    };
+
+    if (!token || !userData) {
+      throw new Error("Missing token or user data in response");
+    }
+
+    // Store token and user data in localStorage
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    // Call onLogin prop with user data
+    onLogin(userData);
+
+    setSnackbar({
+      open: true,
+      message: "Login successful! Redirecting...",
+      severity: "success",
+    });
+
+    console.log('[Login] Navigating to:', userData.role === "admin" ? "/admin-dashboard" : "/dashboard");
+
+    setTimeout(() => {
+      navigate(userData.role === "admin" ? "/admin-dashboard" : "/dashboard");
+    }, 1000);
+  } catch (error) {
+    console.error('[Login] Error in handleLogin:', error);
+    let errorMessage = "An error occurred during login. Please try again.";
+
+    if (error.response) {
+      if (error.response.status === 401) {
+        errorMessage = "Invalid credentials. Please check your Student ID/Email and password.";
+      } else if (error.response.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    setSnackbar({
+      open: true,
+      message: errorMessage,
+      severity: "error",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const [forgotOpen, setForgotOpen] = useState(false);
 
-  const handleForgotPasswordRequest = async (studentId) => {
-    try {
-      if (!studentId) {
-        setSnackbar({
-          open: true,
-          message: "Please provide a Student ID.",
-          severity: "error",
-        });
-        return;
-      }
+ const handleForgotPasswordRequest = async (studentId) => {
+  if (!studentId) {
+    setSnackbar({
+      open: true,
+      message: "Please provide a Student ID.",
+      severity: "error",
+    });
+    return;
+  }
 
-      // Validate Student ID format
-      const studentIdRegex = /^S\d{8}@student\.usp\.ac\.fj$/;
-      if (!studentIdRegex.test(studentId)) {
-        setSnackbar({
-          open: true,
-          message: "Invalid Student ID format.",
-          severity: "error",
-        });
-        return;
-      }
-
-      // Prepare reset DTO
-      const resetDto = {
-        email: studentId, // Assuming API expects email field
-      };
-
-      // Call resetPassword API
-      await resetPassword(resetDto);
-
-      setSnackbar({
-        open: true,
-        message: "Password reset request sent successfully!",
-        severity: "success",
-      });
-      setForgotOpen(false);
-    } catch (error) {
-      console.error("[Login] Error in handleForgotPasswordRequest:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Failed to send password reset request. Please try again.";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+  try {
+    setLoading(true);
+    await resetPassword({ email: studentId });
+    
+    setSnackbar({
+      open: true,
+      message: "Password reset link sent to your email!",
+      severity: "success",
+    });
+    setForgotOpen(false);
+  } catch (error) {
+    console.error('[Forgot Password] Error:', error);
+    let errorMessage = "Failed to send password reset request.";
+    
+    if (error.response && error.response.data && error.response.data.message) {
+      errorMessage = error.response.data.message;
     }
-  };
+    
+    setSnackbar({
+      open: true,
+      message: errorMessage,
+      severity: "error",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <>
@@ -1266,6 +1260,7 @@ const Login = ({ onLogin }) => {
         <Paper
           elevation={6}
           sx={{
+            //width: { xs: "90%", sm: "600px" },
             borderRadius: "30px",
             backgroundColor: "#FAF9F6",
             overflow: "hidden",
@@ -1496,6 +1491,19 @@ const Login = ({ onLogin }) => {
                   </Button>
                 </Box>
               </form>
+              {/* <Box>
+                <img
+                  src={LoginBorder}
+                  alt="SDIP"
+                  style={{
+                    width: "60%",
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    borderBottomLeftRadius: "30px",
+                  }}
+                />
+              </Box> */}
             </Grid>
             <Grid
               item
