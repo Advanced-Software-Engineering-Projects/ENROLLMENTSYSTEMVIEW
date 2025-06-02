@@ -103,7 +103,7 @@ const generateHoldsPDF = (student, holds) => {
 };
 
 // AdminHolds Component
-const AdminHolds = () => {
+const ServiceManagement = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [holds, setHolds] = useState([]);
@@ -409,4 +409,4 @@ const AdminHolds = () => {
   );
 };
 
-export default AdminHolds;
+export default ServiceManagement;
