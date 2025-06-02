@@ -92,11 +92,29 @@ export const getGpaTrend = (studentId) => api.get(`/grades/gpa-trend?studentId=$
 export const getProgramAudit = (studentId) => api.get(`/programs/audit?studentId=${studentId}`);
 
 // Students
-export const getStudent = (studentId) => api.get(`/students/${studentId}`);
-export const updateStudent = (studentId, studentData) => api.put(`/students/${studentId}`, studentData);
-export const uploadAvatar = (studentId, formData) => api.post(`/students/${studentId}/avatar`, formData, {
-  headers: { 'Content-Type': 'multipart/form-data' },
-});
+// export const getStudent = (studentId) => api.get(`/students/${studentId}`);
+// export const updateStudent = (studentId, studentData) => api.put(`/students/${studentId}`, studentData);
+// export const uploadAvatar = (studentId, formData) => api.post(`/students/${studentId}/avatar`, formData, {
+//   headers: { 'Content-Type': 'multipart/form-data' },
+// });
+
+export const getStudent = (studentId) => {
+  // Remove email domain if present
+  const cleanId = studentId.includes('@') ? studentId.split('@')[0] : studentId;
+  return api.get(`/students/${cleanId}`);
+};
+
+export const updateStudent = (studentId, studentData) => {
+  const cleanId = studentId.includes('@') ? studentId.split('@')[0] : studentId;
+  return api.put(`/students/${cleanId}`, studentData);
+};
+
+export const uploadAvatar = (studentId, formData) => {
+  const cleanId = studentId.includes('@') ? studentId.split('@')[0] : studentId;
+  return api.post(`/students/${cleanId}/avatar`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
 
 // Timetables
 export const getTimetables = (studentId, semester) => api.get(`/timetables?studentId=${studentId}&semester=${semester}`);
