@@ -442,7 +442,7 @@ const FormsConfiguration = () => {
                       <TableCell>{submission.currentGrade}</TableCell>
                       <TableCell>
                         {gradeUpdate.submissionId === submission.id ? (
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>``
                             <FormControl sx={{ minWidth: 100, mr: 1 }}>
                               <Select
                                 value={gradeUpdate.newGrade}
