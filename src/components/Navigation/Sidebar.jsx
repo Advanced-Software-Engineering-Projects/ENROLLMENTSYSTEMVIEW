@@ -49,13 +49,22 @@ const Sidebar = ({ isSidebarCollapsed }) => {
       name: 'Dashboard',
       onClick: () => navigate('/dashboard'),
       isActive: currentPath.startsWith('/dashboard'),
-      allowedRoles: ['student', 'admin'],
+      allowedRoles: ['student'],
     },
+    {
+      icon: DashboardTwoToneIcon,
+      name: 'Admin Dashboard',
+      onClick: () => navigate('/admin-dashboard'),
+      isActive: currentPath.startsWith('/admin-dashboard'),
+      allowedRoles: ['admin'],
+    },
+
     {
       icon: PersonIcon,
       name: "Profile",
       onClick: () => navigate("/update-profile"),
       isActive: currentPath.startsWith("/update-profile"),
+      allowedRoles: ['student'],
     },
     { kind: 'divider' },
     { kind: 'header', title: 'Academics', allowedRoles: ['student'] },
