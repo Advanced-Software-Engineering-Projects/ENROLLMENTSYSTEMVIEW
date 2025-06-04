@@ -37,6 +37,14 @@ import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import Lottie from 'lottie-react';
 import LoadingAnimation from '../../assets/Animations/LoadingPage/LoadingAnimation.json'; // Adjust path as needed
+import {
+  getRegisteredStudentsCount,
+  getActiveCoursesCount,
+  getPendingApprovalsCount,
+  getPendingRequests,
+  getEnrollmentData,
+  getCompletionRateData,
+} from '../../Endpoints/AdminEndpoints';
 
 ChartJS.register(
   ArcElement,
@@ -70,30 +78,6 @@ const MetricCard = styled(Card)(({ theme }) => ({
   border: '1px solid #4A4F55',
   boxShadow: theme.shadows[4],
 }));
-
-// Mock data
-const mockRegisteredStudents = { count: 1200 };
-const mockActiveCourses = { count: 45 };
-const mockPendingApprovals = { count: 15 };
-const mockPendingRequests = [
-  { id: 1, studentId: 'S123456', courseCode: 'CS111', requestType: 'Course Registration', date: '2025-05-20' },
-  { id: 2, studentId: 'S789012', courseCode: 'MA111', requestType: 'Enrollment', date: '2025-05-21' },
-  { id: 3, studentId: 'S345678', courseCode: 'ST131', requestType: 'Course Registration', date: '2025-05-22' },
-];
-const mockEnrollmentData = [
-  { semester: 'Semester 1', students: 1000 },
-  { semester: 'Semester 2', students: 1050 },
-  { semester: 'Semester 3', students: 1100 },
-  { semester: 'Semester 4', students: 1150 },
-  { semester: 'Semester 5', students: 1200 },
-];
-const mockCompletionRateData = [
-  { semester: 'Semester 1', rate: 85 },
-  { semester: 'Semester 2', rate: 88 },
-  { semester: 'Semester 3', rate: 90 },
-  { semester: 'Semester 4', rate: 92 },
-  { semester: 'Semester 5', rate: 95 },
-];
 
 const localizer = momentLocalizer(moment);
 
@@ -169,17 +153,38 @@ const AdminDashboard = ({ toggleTheme, mode }) => {
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    // Simulate fetching data with a 3-second delay
-    const timer = setTimeout(() => {
-      setRegisteredStudents(mockRegisteredStudents.count);
-      setActiveCourses(mockActiveCourses.count);
-      setPendingApprovals(mockPendingApprovals.count);
-      setPendingRequests(mockPendingRequests);
-      setEnrollmentData(mockEnrollmentData);
-      setCompletionRateData(mockCompletionRateData);
-      setLoading(false);
-    }, 3000);
-    return () => clearTimeout(timer);
+    const fetchData = async () => {
+      try {
+        const [
+          registeredStudentsRes,
+          activeCoursesRes,
+          pendingApprovalsRes,
+          pendingRequestsRes,
+          enrollmentDataRes,
+          completionRateDataRes,
+        ] = await Promise.all([
+          getRegisteredStudentsCount(),
+          getActiveCoursesCount(),
+          getPendingApprovalsCount(),
+          getPendingRequests(),
+          getEnrollmentData(),
+          getCompletionRateData(),
+        ]);
+
+        setRegisteredStudents(registeredStudentsRes.data.count ?? 0);
+        setActiveCourses(activeCoursesRes.data.count ?? 0);
+        setPendingApprovals(pendingApprovalsRes.data.count ?? 0);
+        setPendingRequests(pendingRequestsRes.data ?? []);
+        setEnrollmentData(enrollmentDataRes.data ?? []);
+        setCompletionRateData(completionRateDataRes.data ?? []);
+      } catch (error) {
+        console.error('Error fetching admin dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   if (loading)
