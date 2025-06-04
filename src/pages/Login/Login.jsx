@@ -1151,10 +1151,10 @@ const handleLogin = async (e) => {
     const userData = response.data.user || {
       id: studentId,
       email: studentId,
-      role: studentId === "Admin@usp.ac.fj" ? "admin" : "student",
-      name: studentId === "Admin@usp.ac.fj" ? "Admin User" : `Student ${studentId.split('@')[0]}`,
-      firstName: studentId === "Admin@usp.ac.fj" ? "Admin" : "Student",
-      lastName: studentId === "Admin@usp.ac.fj" ? "User" : studentId.split('@')[0],
+      role: studentId === "Admin1@usp.ac.fj" ? "admin" : "student",
+      name: studentId === "Admin1@usp.ac.fj" ? "Admin User" : `Student ${studentId.split('@')[0]}`,
+      firstName: studentId === "Admin1@usp.ac.fj" ? "Admin" : "Student",
+      lastName: studentId === "Admin1@usp.ac.fj" ? "User" : studentId.split('@')[0],
     };
 
     if (!token || !userData) {

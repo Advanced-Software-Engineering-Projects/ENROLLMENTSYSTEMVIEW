@@ -3439,6 +3439,7 @@ const CustomToolbar = ({ label, onNavigate }) => {
 
 const Dashboard = ({ studentId, semester, toggleTheme, mode }) => {
   const { user } = useAuth();
+  console.log("User:", user);
   const isAdmin = user?.role === 'Admin';
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [completedCourses, setCompletedCourses] = useState(0);
@@ -3686,9 +3687,8 @@ const Dashboard = ({ studentId, semester, toggleTheme, mode }) => {
             {isAdmin ? 'Admin Dashboard 👋' : 'Welcome back 👋'}
           </Typography>
           <Typography variant="body1" sx={{ color: '#000', mb: 2 }}>
-            {isAdmin}
-              ? 'Manage student records, courses, and approvals efficiently. 🚀'
-              : 'We're excited to have you on this journey of learning, growth, and transformation. 🌟'
+            {isAdmin ? 'Manage student records, courses, and approvals efficiently. 🚀' : 'We are excited to have you on this journey of learning, growth, and transformation. 🌟'}
+              
           </Typography>
         </CardContent>
       </IndustrialPaper>
@@ -3966,9 +3966,9 @@ const Dashboard = ({ studentId, semester, toggleTheme, mode }) => {
                 The University of the South Pacific
               </Typography>
               <Typography variant="body1" sx={{ color: '#B0BEC5', mb: 2, textAlign: 'center' }}>
-                {isAdmin}
+                {isAdmin
                   ? 'Empowering student success through efficient administration. 🌟'
-                  : 'We're excited to have you on this journey of learning, growth, and transformation. 🌟'
+                  : 'We are excited to have you on this journey of learning, growth, and transformation. 🌟'}
               </Typography>
               <Typography variant="body1" sx={{ color: '#B0BEC5', mb: 2, textAlign: 'center' }}>
                 Serving the future of students since © 1968

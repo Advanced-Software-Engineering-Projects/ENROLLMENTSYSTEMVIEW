@@ -106,8 +106,8 @@ const Sidebar = ({ isSidebarCollapsed }) => {
     {
       icon: AdminPanelSettingsIcon,
       name: 'Course Management',
-      onClick: () => navigate('/admin-panel'),
-      isActive: currentPath.startsWith('/admin-panel'),
+      onClick: () => navigate('/course-management'),
+      isActive: currentPath.startsWith('/course-management'), 
       allowedRoles: ['admin'],
     },
     {
@@ -120,15 +120,15 @@ const Sidebar = ({ isSidebarCollapsed }) => {
     {
       icon: BlockTwoToneIcon,
       name: 'Service Management',
-      onClick: () => navigate('/admin-holds'),
-      isActive: currentPath.startsWith('/admin-holds'),
+      onClick: () => navigate('/service-management'),
+      isActive: currentPath.startsWith('/service-management'),
       allowedRoles: ['admin'],
     },
     {
       icon: DescriptionTwoToneIcon,
       name: 'Forms Configuration',
-      onClick: () => navigate('/admin-forms'),
-      isActive: currentPath.startsWith('/admin-forms'),
+      onClick: () => navigate('/forms-configuration'),
+      isActive: currentPath.startsWith('/forms-configuration'),
       allowedRoles: ['admin'],
     },
   ];
