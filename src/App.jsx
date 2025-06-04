@@ -94,7 +94,7 @@ const App = () => {
 					<Route
 						path="/dashboard"
 						element={
-							<ProtectedRoute requiredRoles={["student", "admin"]}>
+							<ProtectedRoute requiredRoles={["student"]}>
 								<Dashboard
 									studentId={user?.id}
 									semester={semester}
