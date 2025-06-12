@@ -26,6 +26,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import BlockTwoToneIcon from '@mui/icons-material/BlockTwoTone';
 import DescriptionTwoToneIcon from '@mui/icons-material/DescriptionTwoTone';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 const Sidebar = ({ isSidebarCollapsed }) => {
   const theme = useTheme();
@@ -138,6 +139,13 @@ const Sidebar = ({ isSidebarCollapsed }) => {
       name: 'Forms Configuration',
       onClick: () => navigate('/forms-configuration'),
       isActive: currentPath.startsWith('/forms-configuration'),
+      allowedRoles: ['admin'],
+    },
+    {
+      icon: ManageAccountsIcon,
+      name: "User Logs",
+      onClick: () => navigate('/user-logs'),
+      isActive: currentPath.startsWith('/user-logs'),
       allowedRoles: ['admin'],
     },
   ];
