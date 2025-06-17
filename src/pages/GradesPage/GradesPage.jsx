@@ -974,7 +974,6 @@ import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import TitleBar from '../../components/Titlebar/Titlebar';
 import { 
   getAcademicRecords, 
-  getGpaTrend,
 } from "../../Endpoints/StudentEndpoints";
 
 const GradesPage = () => {
