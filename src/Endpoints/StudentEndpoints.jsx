@@ -33,6 +33,7 @@ api.interceptors.response.use(
 );
 
 // Academic Records
+// Academic Records
 export const getAcademicRecords = (studentId) => api.get(`/academic-records?studentId=${studentId}`);
 export const getTranscript = (studentId) => api.get(`/academic-records/transcript?studentId=${studentId}`);
 export const getGPA = (studentId) => api.get(`/academic-records/gpa?studentId=${studentId}`);
@@ -41,6 +42,7 @@ export const getEnrollmentStatus = (studentId) => api.get(`/academic-records/enr
 export const checkGraduationEligibility = (studentId) => api.get(`/academic-records/graduation-eligibility?studentId=${studentId}`);
 export const applyForGraduation = (studentId) => api.post(`/academic-records/graduation-application?studentId=${studentId}`);
 export const getGraduationStatus = (studentId) => api.get(`/academic-records/graduation-status?studentId=${studentId}`);
+export const getGpaTrend = (studentId) => api.get(`/grades/gpa-trend?studentId=${studentId}`);
 
 // Course Registrations
 export const getAvailableCoursesRegistration = (studentId) => api.get(`/course-registrations/available?studentId=${studentId}`);

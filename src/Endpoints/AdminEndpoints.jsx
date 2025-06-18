@@ -9,77 +9,28 @@ const api = axios.create({
   },
 });
 
-// // AOP Logging function
-// const logActivity = (action, endpoint, data = null) => {
-//   const user = JSON.parse(localStorage.getItem('user') || '{}');
-//   const logEntry = {
-//     timestamp: new Date().toISOString(),
-//     userId: user.id || 'unknown',
-//     userEmail: user.email || 'unknown',
-//     action,
-//     endpoint,
-//     data: data ? JSON.stringify(data) : null,
-//     userAgent: navigator.userAgent,
-//     ipAddress: 'client-side' // Would be populated server-side
-//   };
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-//   // Store logs locally and send to server
-//   const logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
-//   logs.push(logEntry);
-//   localStorage.setItem('activityLogs', JSON.stringify(logs.slice(-100))); // Keep last 100 logs
-
-//   // Send to server asynchronously
-//   api.post('/admin/logs/activity', logEntry).catch(err =>
-//     console.warn('Failed to send activity log to server:', err)
-//   );
-// };
-
-// api.interceptors.request.use(
-//   (config) => {
-//     const token = localStorage.getItem('token');
-//     if (token) {
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
-
-//     // Log the request
-//     logActivity('API_REQUEST', config.url, {
-//       method: config.method?.toUpperCase(),
-//       params: config.params,
-//       data: config.data
-//     });
-
-//     return config;
-//   },
-//   (error) => Promise.reject(error)
-// );
-
-// api.interceptors.response.use(
-//   (response) => {
-//     // Log successful response
-//     logActivity('API_RESPONSE_SUCCESS', response.config.url, {
-//       status: response.status,
-//       method: response.config.method?.toUpperCase()
-//     });
-//     return response;
-//   },
-//   (error) => {
-//     // Log error response
-//     logActivity('API_RESPONSE_ERROR', error.config?.url, {
-//       status: error.response?.status,
-//       method: error.config?.method?.toUpperCase(),
-//       error: error.response?.data || error.message
-//     });
-
-//     if (error.response && error.response.status === 401) {
-//       logActivity('AUTHENTICATION_FAILURE', error.config?.url);
-//       localStorage.removeItem('token');
-//       localStorage.removeItem('student');
-//       localStorage.removeItem('user');
-//       window.location.href = '/login';
-//     }
-//     return Promise.reject(error.response ? error.response.data : error.message);
-//   }
-// );
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('student');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error.response ? error.response.data : error.message);
+  }
+);
 
 // Admin Dashboard
 export const getDashboardMetrics = () => api.get('/admin/dashboard/metrics');

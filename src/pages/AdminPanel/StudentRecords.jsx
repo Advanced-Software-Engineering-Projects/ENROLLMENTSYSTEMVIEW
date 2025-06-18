@@ -347,8 +347,8 @@ const StudentRecords = () => {
 
   return (
     <DashboardLayout>
-      <Container maxWidth="lg">
-        <Grid container spacing={3}>
+      <Container>
+        <Grid container spacing={2}>
           <Grid item xs={12}>
             <TitleBar title="Student Records" />
           </Grid>

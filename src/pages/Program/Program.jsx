@@ -437,7 +437,7 @@ const Program = () => {
                     <TableRow>
                       <TableCell sx={{ fontWeight: 'bold', color: '#000000' }}>Program</TableCell>
                       <TableCell>
-                        {program.programCode} - {program.programName}
+                        {program.programCode}
                       </TableCell>
                     </TableRow>
                   </TableBody>

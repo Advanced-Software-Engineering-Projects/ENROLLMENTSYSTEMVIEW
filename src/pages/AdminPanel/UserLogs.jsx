@@ -533,6 +533,7 @@ import {
   Slide,
   CircularProgress,
 } from "@mui/material";
+import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import { useNavigate } from "react-router-dom";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -579,8 +580,8 @@ const UserLogs = () => {
 
   // Check for Super Admin access
   useEffect(() => {
-    if (!user || user.roleName !== "SUPER ADMIN") {
-      navigate("/unauthorized-access");
+    if (!user || user.roleName !== "admin") {
+      navigate("/user-logs");
     }
   }, [user, navigate]);
 
@@ -674,6 +675,7 @@ const UserLogs = () => {
   }
 
   return (
+     <DashboardLayout>
     <Box sx={{ p: { xs: 1, md: 2 }, my: 2, minHeight: "100vh" }}>
       {/* Filter Controls */}
       <Stack
@@ -990,6 +992,7 @@ const UserLogs = () => {
         </Alert>
       </Snackbar>
     </Box>
+    </DashboardLayout>
   );
 };
 
