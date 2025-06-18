@@ -34,52 +34,52 @@ const api = axios.create({
 //   );
 // };
 
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+// api.interceptors.request.use(
+//   (config) => {
+//     const token = localStorage.getItem('token');
+//     if (token) {
+//       config.headers.Authorization = `Bearer ${token}`;
+//     }
 
-    // Log the request
-    logActivity('API_REQUEST', config.url, {
-      method: config.method?.toUpperCase(),
-      params: config.params,
-      data: config.data
-    });
+//     // Log the request
+//     logActivity('API_REQUEST', config.url, {
+//       method: config.method?.toUpperCase(),
+//       params: config.params,
+//       data: config.data
+//     });
 
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+//     return config;
+//   },
+//   (error) => Promise.reject(error)
+// );
 
-api.interceptors.response.use(
-  (response) => {
-    // Log successful response
-    logActivity('API_RESPONSE_SUCCESS', response.config.url, {
-      status: response.status,
-      method: response.config.method?.toUpperCase()
-    });
-    return response;
-  },
-  (error) => {
-    // Log error response
-    logActivity('API_RESPONSE_ERROR', error.config?.url, {
-      status: error.response?.status,
-      method: error.config?.method?.toUpperCase(),
-      error: error.response?.data || error.message
-    });
+// api.interceptors.response.use(
+//   (response) => {
+//     // Log successful response
+//     logActivity('API_RESPONSE_SUCCESS', response.config.url, {
+//       status: response.status,
+//       method: response.config.method?.toUpperCase()
+//     });
+//     return response;
+//   },
+//   (error) => {
+//     // Log error response
+//     logActivity('API_RESPONSE_ERROR', error.config?.url, {
+//       status: error.response?.status,
+//       method: error.config?.method?.toUpperCase(),
+//       error: error.response?.data || error.message
+//     });
 
-    if (error.response && error.response.status === 401) {
-      logActivity('AUTHENTICATION_FAILURE', error.config?.url);
-      localStorage.removeItem('token');
-      localStorage.removeItem('student');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error.response ? error.response.data : error.message);
-  }
-);
+//     if (error.response && error.response.status === 401) {
+//       logActivity('AUTHENTICATION_FAILURE', error.config?.url);
+//       localStorage.removeItem('token');
+//       localStorage.removeItem('student');
+//       localStorage.removeItem('user');
+//       window.location.href = '/login';
+//     }
+//     return Promise.reject(error.response ? error.response.data : error.message);
+//   }
+// );
 
 // Admin Dashboard
 export const getDashboardMetrics = () => api.get('/admin/dashboard/metrics');

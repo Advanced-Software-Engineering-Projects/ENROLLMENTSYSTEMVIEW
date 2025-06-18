@@ -630,7 +630,7 @@ const CustomNode = ({ data }) => {
 const Enrollment = () => {
   const navigate = useNavigate();
   const [studentId, setStudentId] = useState('');
-  const [program, setProgram] = useState('');
+  const [program, setProgram] = useState('Bachelor of Software Engineering');
   const [courses, setCourses] = useState([]);
   const [lockedCourses, setLockedCourses] = useState(new Set());
   const [enrolledCourses, setEnrolledCourses] = useState([]);
@@ -657,10 +657,11 @@ const Enrollment = () => {
     const userString = localStorage.getItem('user');
     if (userString) {
       const user = JSON.parse(userString);
-      const cleanId = user.id || (user.email ? user.email.split('@')[0] : null);
+      //const cleanId = user.id || (user.email ? user.email.split('@')[0] : null);
+      const cleanId = user.email.split('@')[0];
       if (cleanId) {
         setStudentId(cleanId);
-        setProgram(user.program || 'NS'); // Default to NS if program not specified
+        //setProgram("Bachelor of Networks & Security");
       } else {
         setAuthError('Invalid user data. Please login again.');
         navigate('/login');

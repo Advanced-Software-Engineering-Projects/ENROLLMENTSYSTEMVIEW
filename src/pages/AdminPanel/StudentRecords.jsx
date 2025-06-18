@@ -316,7 +316,7 @@ const StudentRecords = () => {
         setTotalStudents(response.data.totalCount || 0);
       } catch (err) {
         console.error('Error fetching students:', err);
-        setError(err.response?.data?.message || 'Failed to load student records.');
+        //setError(err.response?.data?.message || 'Failed to load student records.');
       } finally {
         setLoading(false);
       }

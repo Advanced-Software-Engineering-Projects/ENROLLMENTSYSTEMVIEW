@@ -612,9 +612,9 @@ const ServiceManagement = () => {
             <TitleBar title="Service Management" />
           </Grid>
           <Grid item xs={12}>
-            <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
+            {/* <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>
               No students available.
-            </Alert>
+            </Alert> */}
           </Grid>
         </Grid>
       </DashboardLayout>

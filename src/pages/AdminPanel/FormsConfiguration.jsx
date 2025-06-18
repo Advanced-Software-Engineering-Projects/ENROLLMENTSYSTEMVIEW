@@ -785,7 +785,7 @@ const FormsConfiguration = () => {
         setSubmissions(response.data || []);
       } catch (err) {
         console.error('Error fetching grade recheck requests:', err);
-        setError(err.response?.data?.message || 'Failed to load submissions');
+        //setError(err.response?.data?.message || 'Failed to load submissions');
       } finally {
         setLoading(false);
       }

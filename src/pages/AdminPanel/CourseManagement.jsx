@@ -647,7 +647,7 @@ const CourseManagement = ({ toggleTheme, mode }) => {
         });
       } catch (error) {
         console.error('Error fetching registration metrics:', error);
-        setMessage('Error: Failed to load registration metrics');
+        //setMessage('Error: Failed to load registration metrics');
       } finally {
         setLoading(false);
       }

@@ -1521,7 +1521,7 @@ const Timetable = () => {
         setEnrolledCourses(enrolledRes.data || []);
       } catch (error) {
         console.error('Error fetching timetable data:', error);
-        setError(error.response?.data?.message || 'Failed to load timetable data.');
+        //setError(error.response?.data?.message || 'Failed to load timetable data.');
       } finally {
         setLoading(false);
       }
