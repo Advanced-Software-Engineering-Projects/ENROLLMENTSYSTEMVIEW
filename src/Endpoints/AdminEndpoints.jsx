@@ -69,7 +69,7 @@ export const getAllStudents = (page = 1, pageSize = 5) => api.get(`/student-reco
 // Hold Management
 export const getStudentsForHolds = () => api.get('/holds/students');
 export const getHolds = (studentId) => api.get(`/holds?studentId=${studentId}`);
-export const addHold = (holdDto) => api.post('/holds', holdDto);
+export const addHold = (holdDto) => api.post('/service-holds', holdDto);
 export const removeHold = (id) => api.delete(`/holds/${id}`);
 export const getServiceAccessRules = () => api.get('/admin/hold-management/service-access-rules');
 export const updateServiceAccessRules = (allowedServices) => api.put('/admin/hold-management/service-access-rules', allowedServices);

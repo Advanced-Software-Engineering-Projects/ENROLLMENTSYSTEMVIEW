@@ -488,11 +488,11 @@ const GradesPage = () => {
           throw new Error('No academic records data received');
         }
 
-        if (gpaTrendResponse && gpaTrendResponse.data) {
-          setGpaTrendData(gpaTrendResponse.data);
-        } else {
-          throw new Error('No GPA trend data received');
-        }
+        // if (gpaTrendResponse && gpaTrendResponse.data) {
+        //   setGpaTrendData(gpaTrendResponse.data);
+        // } else {
+        //   throw new Error('No GPA trend data received');
+        // }
       } catch (err) {
         console.error('Error fetching data:', err);
         setError(err.message || 'Failed to fetch academic data');

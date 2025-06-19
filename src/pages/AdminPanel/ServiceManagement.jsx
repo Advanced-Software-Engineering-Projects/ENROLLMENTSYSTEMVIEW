@@ -553,7 +553,7 @@ const ServiceManagement = () => {
     try {
       const holdDto = {
         studentId: selectedStudentId,
-        service: newHold.service,
+        serviceId: newHold.service,
         reason: newHold.reason,
       };
       const response = await addHold(holdDto);
@@ -692,11 +692,11 @@ const ServiceManagement = () => {
                       onChange={handleNewHoldChange('service')}
                       label="Service"
                     >
-                      {services.map((service) => (
-                        <MenuItem key={service} value={service}>
-                          {service}
-                        </MenuItem>
-                      ))}
+                      {services.map((service, index) => (
+  <MenuItem key={service} value={index + 1}>
+    {service}
+  </MenuItem>
+))}
                     </Select>
                   </FormControl>
                 </Grid>

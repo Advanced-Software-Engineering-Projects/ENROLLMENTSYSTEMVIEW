@@ -555,6 +555,7 @@ import dayjs from 'dayjs';
 import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import {
   openCourseRegistration,
+  openCourseRegistrationManagement,
   closeCourseRegistration,
   getRegistrationMetrics,
 } from '../../Endpoints/AdminEndpoints';
@@ -684,60 +685,125 @@ const CourseManagement = ({ toggleTheme, mode }) => {
     return () => clearInterval(interval);
   }, [openRegistrations]);
 
-  const handleOpen = async () => {
-    setLoading(true);
-    try {
-      if (
-        dates.startDate &&
-        dates.endDate &&
-        dates.startTime &&
-        dates.endTime &&
-        selectedCourses &&
-        selectedCourses.length > 0
-      ) {
-        const startDateTime = dayjs(`${dates.startDate} ${dates.startTime}`, 'YYYY-MM-DD h:mm A');
-        const endDateTime = dayjs(`${dates.endDate} ${dates.endTime}`, 'YYYY-MM-DD h:mm A');
-        if (endDateTime.isBefore(startDateTime)) {
-          setMessage('Error: End date/time must be after start date/time');
-          return;
-        }
-        if (endDateTime.isBefore(dayjs())) {
-          setMessage('Error: End date/time cannot be in the past');
-          return;
-        }
+  // const handleOpen = async () => {
+  //   setLoading(true);
+  //   try {
+  //     if (
+  //       dates.startDate &&
+  //       dates.endDate &&
+  //       dates.startTime &&
+  //       dates.endTime &&
+  //       selectedCourses &&
+  //       selectedCourses.length > 0
+  //     ) {
+  //       const startDateTime = dayjs(`${dates.startDate} ${dates.startTime}`, 'YYYY-MM-DD h:mm A');
+  //       const endDateTime = dayjs(`${dates.endDate} ${dates.endTime}`, 'YYYY-MM-DD h:mm A');
+  //       if (endDateTime.isBefore(startDateTime)) {
+  //         setMessage('Error: End date/time must be after start date/time');
+  //         return;
+  //       }
+  //       if (endDateTime.isBefore(dayjs())) {
+  //         setMessage('Error: End date/time cannot be in the past');
+  //         return;
+  //       }
 
-        const courseRegistrationDto = {
-          courses: selectedCourses,
-          startDate: startDateTime.format('YYYY-MM-DD HH:mm:ss'),
-          endDate: endDateTime.format('YYYY-MM-DD HH:mm:ss'),
-        };
+  //       const courseRegistrationDto = {
+  //         courses: selectedCourses,
+  //         startDate: startDateTime.format('YYYY-MM-DD HH:mm:ss'),
+  //         endDate: endDateTime.format('YYYY-MM-DD HH:mm:ss'),
+  //       };
 
-        await openCourseRegistration(courseRegistrationDto);
+  //       await openCourseRegistration(courseRegistrationDto);
 
-        setOpenRegistrations((prev) => [
-          ...prev,
-          {
-            courses: selectedCourses,
-            startDate: dates.startDate,
-            startTime: dates.startTime,
-            endDate: dates.endDate,
-            endTime: dates.endTime,
-          },
-        ]);
-        setMessage(
-          `Registration period opened successfully for ${selectedCourses.join(', ')} from ${dates.startDate} ${dates.startTime} to ${dates.endDate} ${dates.endTime}`
-        );
-        handleReset();
-      } else {
-        setMessage('Error: Please provide both dates, times, and select at least one course');
+  //       setOpenRegistrations((prev) => [
+  //         ...prev,
+  //         {
+  //           courses: selectedCourses,
+  //           startDate: dates.startDate,
+  //           startTime: dates.startTime,
+  //           endDate: dates.endDate,
+  //           endTime: dates.endTime,
+  //         },
+  //       ]);
+  //       setMessage(
+  //         `Registration period opened successfully for ${selectedCourses.join(', ')} from ${dates.startDate} ${dates.startTime} to ${dates.endDate} ${dates.endTime}`
+  //       );
+  //       handleReset();
+  //     } else {
+  //       setMessage('Error: Please provide both dates, times, and select at least one course');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error opening registration:', error);
+  //     setMessage(error.response?.data?.message || 'Error: Failed to open registration');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+ const handleOpen = async () => {
+  setLoading(true);
+  try {
+    if (
+      dates.startDate &&
+      dates.endDate &&
+      dates.startTime &&
+      dates.endTime &&
+      selectedCourses &&
+      selectedCourses.length > 0
+    ) {
+      const startDateTime = dayjs(`${dates.startDate} ${dates.startTime}`, 'YYYY-MM-DD h:mm A');
+      const endDateTime = dayjs(`${dates.endDate} ${dates.endTime}`, 'YYYY-MM-DD h:mm A');
+
+      if (!startDateTime.isValid() || !endDateTime.isValid()) {
+        setMessage('Error: Invalid date or time format');
+        return;
       }
-    } catch (error) {
-      console.error('Error opening registration:', error);
-      setMessage(error.response?.data?.message || 'Error: Failed to open registration');
-    } finally {
-      setLoading(false);
+      if (endDateTime.isBefore(startDateTime)) {
+        setMessage('Error: End date/time must be after start date/time');
+        return;
+      }
+      if (endDateTime.isBefore(dayjs())) {
+        setMessage('Error: End date/time cannot be in the past');
+        return;
+      }
+
+      const payload = {
+        courseCodes: selectedCourses,
+        startDate: startDateTime.format('YYYY-MM-DD'), // e.g., '2025-06-20'
+        endDate: endDateTime.format('YYYY-MM-DD'), // e.g., '2025-06-21'
+        startTime: startDateTime.format('HH:mm'), // e.g., '10:00'
+        endTime: endDateTime.format('HH:mm'), // e.g., '12:00'
+      };
+
+      console.log('Payload:', JSON.stringify(payload, null, 2));
+      await openCourseRegistrationManagement(payload);
+
+      setOpenRegistrations((prev) => [
+        ...prev,
+        {
+          courses: selectedCourses,
+          startDate: dates.startDate,
+          startTime: dates.startTime,
+          endDate: dates.endDate,
+          endTime: dates.endTime,
+        },
+      ]);
+      setMessage(
+        `Registration period opened successfully for ${selectedCourses.join(', ')} from ${dates.startDate} ${dates.startTime} to ${dates.endDate} ${dates.endTime}`
+      );
+      handleReset();
+    } else {
+      setMessage('Error: Please provide both dates, times, and select at least one course');
     }
-  };
+  } catch (error) {
+    console.error('Error opening registration:', error);
+    const errorMessages = error.response?.data?.errors
+      ? Object.values(error.response.data.errors).flat().join(' ')
+      : error.response?.data?.title || 'Error: Failed to open registration';
+    setMessage(errorMessages);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleClose = async () => {
     setLoading(true);
