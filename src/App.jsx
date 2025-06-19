@@ -24,6 +24,7 @@ import ServiceManagement from "./pages/AdminPanel/ServiceManagement";
 import Forms from "./pages/Forms/Forms";
 import ProtectedRoute from "../ProtectedRoute";
 import AdminDashboard from "./pages/Dashboard/AdminDashboard";
+import UserLogs from "./pages/AdminPanel/UserLogs";
 
 const App = () => {
 	const [semester, setSemester] = useState("Semester I 2025");
@@ -222,6 +223,15 @@ const App = () => {
 							</ProtectedRoute>
 						}
 					/>
+					<Route
+					   	path="/user-logs"
+						element={
+							<ProtectedRoute requiredRoles={["admin"]}>
+								<UserLogs toggleTheme={toggleTheme} mode={mode} />
+							</ProtectedRoute>
+						}
+						
+					/>	
 					<Route path="/" element={<Navigate to="/login" replace />} />
 				</Routes>
 			</Router>
